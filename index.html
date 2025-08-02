@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Donate to Maaya Anubhuti Foundation</title>
+  <title>Support Maaya Anubhuti Foundation</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
@@ -11,211 +11,185 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <style>
     body {
+      font-family: Arial, sans-serif;
       background-color: #fff9e6;
-      padding: 40px 10px;
-    }
-    .container {
-      max-width: 720px;
+      max-width: 700px;
       margin: auto;
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      padding: 20px;
     }
-    h1 {
-      color: #e68a00;
-      text-align: center;
-      margin-bottom: 10px;
+    h1, h2 {
+      color: #ff9900;
     }
-    p.description {
-      text-align: center;
-      color: #5e4300;
-      font-size: 16px;
+    .form-group {
       margin-bottom: 15px;
     }
-    p.note {
-      text-align: center;
-      color: #a94442;
+    label {
       font-weight: bold;
-      margin-bottom: 20px;
     }
-    .form-control {
+    input, textarea {
       width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
     }
-    .mobile-wrapper {
+    .mobile-prefix {
       position: relative;
     }
-    .mobile-wrapper input {
-      padding-left: 50px;
-    }
-    .mobile-wrapper::before {
+    .mobile-prefix::before {
       content: "+91";
       position: absolute;
-      left: 12px;
+      left: 10px;
       top: 50%;
       transform: translateY(-50%);
-      font-weight: bold;
       color: #555;
+      font-weight: bold;
     }
-    .form-check-label {
-      font-size: 14px;
+    #mobile {
+      padding-left: 45px;
     }
-    .read-more {
-      display: none;
-    }
-    .read-toggle {
-      color: #007BFF;
-      border: none;
-      background: none;
-      cursor: pointer;
-      font-size: 14px;
-      margin-left: 5px;
-    }
-    .btn-primary {
+    button {
       background-color: #ff9900;
+      color: white;
       border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
     }
-    .btn-primary:hover {
+    button:hover {
       background-color: #e68a00;
     }
-    #authConfirmed {
+    .hidden {
       display: none;
+    }
+    .declaration-box {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .declaration-box input[type="checkbox"] {
+      margin-top: 4px;
+      margin-right: 10px;
+    }
+    #donationOptions {
       margin-top: 20px;
-      padding: 12px;
-      background-color: #e8f8ec;
-      border-left: 5px solid green;
-      color: #155724;
-      font-weight: bold;
+      padding: 15px;
+      background-color: #f3f3f3;
+      border-radius: 5px;
+    }
+    .certificate-img {
+      width: 100%;
+      max-width: 250px;
+      margin-bottom: 10px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Support Maaya Anubhuti Foundation 💛</h1>
-    <p class="description">Empowering elderly care and youth training. Join this noble journey with your kind support.</p>
-    <p class="note">Please verify your mobile number before proceeding to donation.</p>
+  <h1>Support Maaya Anubhuti Foundation 💛</h1>
+  <h2>For dignity and care of India's elderly</h2>
+  <p class="text-muted">Please verify your mobile number before proceeding to donation.</p>
 
-    <form id="donationForm">
-      <div class="mb-3">
-        <label for="name" class="form-label">Full Name*</label>
-        <input type="text" class="form-control" id="name" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="mobile" class="form-label">Mobile Number*</label>
-        <div class="mobile-wrapper">
-          <input type="tel" class="form-control" id="mobile" pattern="[0-9]{10}" required placeholder="xxxxxxxxxx">
-        </div>
-      </div>
-
-      <div class="mb-3">
-        <label for="email" class="form-label">Email (Optional)</label>
-        <input type="email" class="form-control" id="email">
-      </div>
-
-      <div class="mb-3">
-        <label for="amount" class="form-label">Amount Donated* (Min ₹50)</label>
-        <input type="number" class="form-control" id="amount" min="50" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="message" class="form-label">Message (Optional)</label>
-        <textarea class="form-control" id="message" rows="2"></textarea>
-      </div>
-
-      <div class="form-check mb-2">
-        <input class="form-check-input" type="checkbox" id="declaration" required>
-        <label class="form-check-label" for="declaration">
-          I hereby declare I am an Indian citizen donating my own funds.
-          <span id="more" class="read-more"> I consent to contact via WhatsApp/email/SMS for donation updates, receipts, or campaigns.</span>
-          <button type="button" class="read-toggle" onclick="toggleReadMore()">Read More</button>
-        </label>
-      </div>
-
-      <div class="form-check mb-4">
-        <input class="form-check-input" type="checkbox" id="anonymous">
-        <label class="form-check-label" for="anonymous">I opt to keep my name anonymous.</label>
-      </div>
-
-      <div class="cf-turnstile" data-sitekey="0x4AAAAAABnuBDDS5ho0ShrZ"></div>
-
-      <button type="button" class="btn btn-primary w-100 mt-3" id="submitBtn">Submit</button>
-    </form>
-
-    <div id="otpSection" class="d-none mt-4">
-      <label for="otp">Enter OTP:</label>
-      <input type="text" id="otp" class="form-control mt-1">
-      <button type="button" id="verifyOTP" class="btn btn-primary mt-2">Submit OTP</button>
-      <div id="otpFeedback" class="fw-bold mt-2"></div>
+  <form id="donationForm">
+    <div class="form-group">
+      <label for="name">Full Name*</label>
+      <input type="text" id="name" required>
+    </div>
+    <div class="form-group mobile-prefix">
+      <label for="mobile">Mobile Number*</label>
+      <input type="tel" id="mobile" pattern="[0-9]{10}" required>
+    </div>
+    <div class="form-group">
+      <label for="email">Email (Optional)</label>
+      <input type="email" id="email">
+    </div>
+    <div class="form-group">
+      <label for="amount">Amount Donated* (Min ₹50)</label>
+      <input type="number" id="amount" min="50" required>
+    </div>
+    <div class="form-group">
+      <label for="message">Message (Optional)</label>
+      <textarea id="message"></textarea>
     </div>
 
-    <div id="authConfirmed">✅ Mobile number authenticated. You may now proceed with your donation.</div>
+    <div class="declaration-box">
+      <input type="checkbox" id="agreeTerms" required>
+      <label for="agreeTerms">I hereby declare that I am a citizen of India and agree to be contacted regarding this donation. <span style="color:blue;cursor:pointer">Read More</span></label>
+    </div>
+
+    <div class="declaration-box">
+      <input type="checkbox" id="anonymous">
+      <label for="anonymous">I opt to donate anonymously</label>
+    </div>
+
+    <div id="turnstile-container" class="my-3">
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAABnuBDDS5ho0ShrZ" data-theme="light"></div>
+    </div>
+
+    <div class="form-group hidden" id="otpBox">
+      <label for="otp">Enter OTP</label>
+      <input type="text" id="otp">
+    </div>
+
+    <button type="button" id="submitBtn">Submit</button>
+  </form>
+
+  <div id="donationOptions" class="hidden">
+    <h3>🧾 Donation Methods</h3>
+    <p><strong>QR Code:</strong> Scan using any UPI app:</p>
+    <img src="https://assets.zyrosite.com/A0xj3j1bO7C10DBz/qrcode-mP4M8qerRWcxWkvk.png" class="certificate-img" alt="QR Code">
+    <p><strong>UPI ID:</strong> 9599914274@idbi</p>
+    <p><strong>Bank Transfer:</strong></p>
+    <p>Account No: 0873102000012698<br>IFSC: IBKL0000873<br>Bank: IDBI, Indirapuram</p>
+    <h4>📄 Verified Certificates</h4>
+    <img src="https://assets.zyrosite.com/incorporation.jpeg" class="certificate-img" alt="Incorporation">
+    <img src="https://assets.zyrosite.com/pan.jpeg" class="certificate-img" alt="PAN">
+    <img src="https://assets.zyrosite.com/section8.jpeg" class="certificate-img" alt="Section 8">
+    <img src="https://assets.zyrosite.com/darpan.jpeg" class="certificate-img" alt="DARPAN">
   </div>
 
   <script>
-    function toggleReadMore() {
-      const extra = document.getElementById("more");
-      const toggle = document.querySelector(".read-toggle");
-      if (extra.style.display === "inline") {
-        extra.style.display = "none";
-        toggle.textContent = "Read More";
-      } else {
-        extra.style.display = "inline";
-        toggle.textContent = "Read Less";
-      }
-    }
-
     const firebaseConfig = {
-      apiKey: "AIzaSyCbaRQTOjPmLX4ulB5gt1LbkhSpLFDRnBo",
-      authDomain: "maaya-anubhuti-donation.firebaseapp.com",
-      projectId: "maaya-anubhuti-donation",
-      storageBucket: "maaya-anubhuti-donation.appspot.com",
-      messagingSenderId: "1045010997595",
-      appId: "1:1045010997595:web:6c4cfc50867ed26719fa7e"
+      apiKey: "AIzaSyDq-kByubokuaVQlBULa4GEc3PwBzyld1A",
+      authDomain: "maaya-anubhuti-donation-467813.firebaseapp.com",
+      projectId: "maaya-anubhuti-donation-467813",
+      storageBucket: "maaya-anubhuti-donation-467813.firebasestorage.app",
+      messagingSenderId: "528279712349",
+      appId: "1:528279712349:web:78e6cb4aa3ce43dce0d3b4"
     };
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-    let confirmationResult;
-    const otpSection = document.getElementById("otpSection");
-    const authConfirmed = document.getElementById("authConfirmed");
+    const submitBtn = document.getElementById("submitBtn");
+    const otpBox = document.getElementById("otpBox");
+    const donationForm = document.getElementById("donationForm");
+    const donationOptions = document.getElementById("donationOptions");
 
-    document.getElementById("submitBtn").addEventListener("click", () => {
-      if (location.protocol === "file:") {
-        alert("Please deploy this page on HTTPS (e.g., GitHub Pages). Turnstile and Firebase will not work locally.");
-        return;
-      }
+    let confirmationResult = null;
+    let currentStep = 1;
 
+    submitBtn.addEventListener("click", async () => {
       const phone = "+91" + document.getElementById("mobile").value;
-      const amount = parseInt(document.getElementById("amount").value);
-      if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
-      if (!/\+91[6-9]\d{9}/.test(phone)) return alert("Invalid phone.");
-      if (isNaN(amount) || amount < 50) return alert("Min ₹50 required.");
+      const otp = document.getElementById("otp").value;
 
-      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('submitBtn', { size: 'invisible' });
-      window.recaptchaVerifier.verify().then(() => {
-        return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
-      }).then(result => {
-        confirmationResult = result;
-        otpSection.classList.remove("d-none");
-        document.getElementById("submitBtn").disabled = true;
-      }).catch(err => {
-        alert("Error sending OTP: " + err.message);
-        console.error("OTP Error:", err);
-      });
-    });
-
-    document.getElementById("verifyOTP").addEventListener("click", () => {
-      confirmationResult.confirm(document.getElementById("otp").value).then(() => {
-        const fb = document.getElementById("otpFeedback");
-        fb.textContent = "Authentication Successful";
-        fb.style.color = "green";
-        authConfirmed.style.display = "block";
-      }).catch(err => {
-        const fb = document.getElementById("otpFeedback");
-        fb.textContent = "Wrong OTP";
-        fb.style.color = "red";
-        console.error("OTP Verification Error:", err);
-      });
+      if (currentStep === 1) {
+        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('turnstile-container', {size: 'invisible'});
+        try {
+          confirmationResult = await auth.signInWithPhoneNumber(phone, window.recaptchaVerifier);
+          otpBox.classList.remove("hidden");
+          currentStep = 2;
+        } catch (error) {
+          console.error("OTP Error:", error);
+          alert("Error sending OTP: " + error.message);
+        }
+      } else if (currentStep === 2) {
+        try {
+          await confirmationResult.confirm(otp);
+          donationForm.classList.add("hidden");
+          donationOptions.classList.remove("hidden");
+        } catch (error) {
+          alert("Invalid OTP");
+        }
+      }
     });
   </script>
 </body>
