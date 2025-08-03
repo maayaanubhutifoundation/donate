@@ -25,7 +25,13 @@
     h1 {
       color: #e68a00;
       text-align: center;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
+    }
+    .lead {
+      font-size: 1rem;
+      color: #444;
+      text-align: center;
+      margin-bottom: 25px;
     }
     .form-control {
       width: 100%;
@@ -44,9 +50,6 @@
       transform: translateY(-50%);
       font-weight: bold;
       color: #555;
-    }
-    .form-check-label {
-      font-size: 14px;
     }
     .btn-primary {
       background-color: #ff9900;
@@ -74,127 +77,109 @@
       padding: 15px;
       border-radius: 8px;
     }
-    strong.highlight {
-      background-color: #fffdc1;
-      padding: 2px 4px;
-      border-radius: 4px;
-    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Support Maaya Anubhuti Foundation 💛</h1>
+    <p class="lead">
+      Your generous donation helps us care for the elderly, build a compassionate environment, and train youth to serve with dignity. Join us in bringing hope and care to those who need it most.
+    </p>
 
     <div id="donationOptions">
       <h5 class="mt-3">Donation Options</h5>
-      <p>Your generous donation to Maaya Anubhuti Foundation helps us provide compassionate care for the elderly, build safe and comfortable environments, and empower underprivileged youth with training to become skilled caregivers.</p>
-
       <div class="row text-center">
-        <!-- QR Code -->
         <div class="col-md-4 mb-3">
           <div class="card h-100">
             <div class="card-body">
               <div style="font-size: 30px;">💳</div>
               <h6 class="card-title mt-2">Scan & Pay</h6>
-              <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=384,h=448,fit=crop/A0xj3j1bO7C10DBz/qr_code-m6Lb0BlRRqs7MEGd.png" alt="UPI QR" class="img-fluid" style="max-width: 120px;" />
+              <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=384,h=448,fit=crop/A0xj3j1bO7C10DBz/qr_code-m6Lb0BlRRqs7MEGd.png" alt="QR" class="img-fluid" style="max-width: 120px;">
             </div>
           </div>
         </div>
-        <!-- UPI ID -->
         <div class="col-md-4 mb-3">
           <div class="card h-100">
             <div class="card-body">
               <div style="font-size: 30px;">🔢</div>
               <h6 class="card-title mt-2">UPI ID</h6>
-              <p class="mb-1" id="upiText">9599914274@idbi</p>
+              <p id="upiText">9599914274@idbi</p>
               <button onclick="copyText('upiText')" class="btn btn-sm btn-outline-primary">Copy UPI ID</button>
             </div>
           </div>
         </div>
-        <!-- Bank -->
         <div class="col-md-4 mb-3">
           <div class="card h-100">
             <div class="card-body">
               <div style="font-size: 30px;">🏦</div>
               <h6 class="card-title mt-2">Bank Transfer</h6>
               <small>
-                A/C No: <span id="accNo">0873102000012698</span><br/>
-                IFSC: IBKL0000873<br/>
-                Bank: IDBI Bank<br/>
+                A/C No: <span id="accNo">0873102000012698</span><br>
+                IFSC: IBKL0000873<br>
+                Bank: IDBI Bank<br>
                 Branch: Indirapuram, Ghaziabad
-              </small><br/>
+              </small><br>
               <button onclick="copyText('accNo')" class="btn btn-sm btn-outline-primary mt-2">Copy Account No</button>
             </div>
           </div>
         </div>
       </div>
-
-      <p class="text-muted small mt-4" style="font-size: 13px;">
-        <strong>📝 Legal Note:</strong><br/>
+      <p class="text-muted small mt-3">
         Maaya Anubhuti Foundation is a registered Section 8 Non-profit organisation (License No. 169918, CIN: U86900UP2025NPL226294, PAN: AATCM5136F). All donations go directly towards the cause of elderly welfare and training underprivileged youth. We do not pay dividends or profits to any member of the NGO.
       </p>
     </div>
 
     <form id="donationForm">
       <div class="mb-3">
-        <label for="name" class="form-label">Full Name*</label>
+        <label class="form-label">Full Name*</label>
         <input type="text" class="form-control" id="name" required>
       </div>
-
       <div class="mb-3">
-        <label for="mobile" class="form-label">Mobile Number*</label>
+        <label class="form-label">Mobile Number*</label>
         <div class="mobile-wrapper">
           <input type="tel" class="form-control" id="mobile" pattern="[0-9]{10}" required placeholder="xxxxxxxxxx">
         </div>
       </div>
-
       <div id="otpSection" class="d-none">
         <label for="otp">Enter OTP:</label>
         <input type="text" id="otp" class="form-control mt-1" autofocus />
         <div id="otpFeedback" class="fw-bold mt-2"></div>
       </div>
-
       <div class="mb-3">
-        <label for="email" class="form-label">Email (Optional)</label>
+        <label class="form-label">Email (Optional)</label>
         <input type="email" class="form-control" id="email">
       </div>
-
       <div class="mb-3">
-        <label for="amount" class="form-label">Amount Donated* (Min ₹50)</label>
+        <label class="form-label">Amount Donated* (Min ₹50)</label>
         <input type="number" class="form-control" id="amount" min="50" required>
       </div>
-
       <div class="mb-3">
-        <label for="address" class="form-label">Address (Optional)</label>
+        <label class="form-label">Address (Optional)</label>
         <input type="text" class="form-control" id="address">
       </div>
-
       <div class="mb-3">
-        <label for="message" class="form-label">Message (Optional)</label>
+        <label class="form-label">Message (Optional)</label>
         <textarea class="form-control" id="message" rows="2"></textarea>
       </div>
-
       <div class="form-check mb-2">
         <input class="form-check-input" type="checkbox" id="declaration" required>
         <label class="form-check-label" for="declaration">
-          I hereby declare I am an Indian citizen donating my own funds.
-          <span id="more" class="read-more"> I consent to contact via WhatsApp/email/SMS for donation updates, receipts, or campaigns.</span>
-          <button type="button" class="read-toggle" onclick="toggleReadMore()">Read More</button>
+          I hereby declare I am an Indian citizen...
+          <span id="more" style="display: none;">
+            donating my own funds. I consent to contact via WhatsApp/email/SMS for donation updates, receipts, or campaigns.
+          </span>
+          <button type="button" id="readToggle" class="btn btn-link p-0" style="font-size: 13px;" onclick="toggleReadMore()">Read More</button>
         </label>
       </div>
-
       <div class="form-check mb-2">
         <input class="form-check-input" type="checkbox" id="anonymous">
         <label class="form-check-label" for="anonymous">I opt to keep my name anonymous.</label>
       </div>
-
       <div class="form-check mb-3">
         <input class="form-check-input" type="checkbox" id="receipt">
-        <label class="form-check-label" for="receipt">I opt to get the receipt by WhatsApp/Email within 7 days.</label>
+        <label class="form-check-label" for="receipt">I would like to receive the receipt via WhatsApp/email.</label>
       </div>
-
       <div class="cf-turnstile" data-sitekey="0x4AAAAAABnuBDDS5ho0ShrZ"></div>
-
       <button type="button" class="btn btn-primary w-100 mt-3" id="submitBtn">Submit</button>
     </form>
 
@@ -203,17 +188,20 @@
 
   <script>
     function toggleReadMore() {
-      const extra = document.getElementById("more");
-      const toggle = document.querySelector(".read-toggle");
-      extra.style.display = (extra.style.display === "inline") ? "none" : "inline";
-      toggle.textContent = (extra.style.display === "inline") ? "Read Less" : "Read More";
+      const moreText = document.getElementById("more");
+      const btn = document.getElementById("readToggle");
+      if (moreText.style.display === "none") {
+        moreText.style.display = "inline";
+        btn.textContent = "Read Less";
+      } else {
+        moreText.style.display = "none";
+        btn.textContent = "Read More";
+      }
     }
 
     function copyText(id) {
       const text = document.getElementById(id).innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Copied: " + text);
-      });
+      navigator.clipboard.writeText(text).then(() => alert("Copied: " + text));
     }
 
     const firebaseConfig = {
@@ -235,14 +223,20 @@
     const donationForm = document.getElementById("donationForm");
     const donationOptions = document.getElementById("donationOptions");
 
-    submitBtn.addEventListener("click", () => {
-      if (!confirmationResult) {
-        const phone = "+91" + document.getElementById("mobile").value;
-        const amount = parseInt(document.getElementById("amount").value);
-        if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
-        if (!/\+91[6-9]\d{9}/.test(phone)) return alert("Invalid phone.");
-        if (isNaN(amount) || amount < 50) return alert("Min ₹50 required.");
+    otpInput.addEventListener("input", () => {
+      if (otpInput.value.length === 6 && confirmationResult) submitBtn.click();
+    });
 
+    submitBtn.addEventListener("click", () => {
+      const phone = "+91" + document.getElementById("mobile").value;
+      const amount = parseInt(document.getElementById("amount").value);
+      if (!/^\\+91[6-9]\\d{9}$/.test(phone)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
+      if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
+      if (isNaN(amount) || amount < 50) return alert("Minimum ₹50 donation required.");
+
+      if (!confirmationResult) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending OTP...";
         window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('submitBtn', { size: 'invisible' });
         window.recaptchaVerifier.verify().then(() => {
           return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
@@ -250,13 +244,16 @@
           confirmationResult = result;
           otpSection.classList.remove("d-none");
           otpInput.focus();
+          submitBtn.disabled = false;
           submitBtn.textContent = "Submit OTP for Donation";
         }).catch(err => {
           alert("Error sending OTP: " + err.message);
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit";
         });
       } else {
         confirmationResult.confirm(otpInput.value).then(() => {
-          authConfirmed.style.display = "none";
+          authConfirmed.style.display = "block";
           donationForm.style.display = "none";
           donationOptions.style.display = "block";
         }).catch(err => {
