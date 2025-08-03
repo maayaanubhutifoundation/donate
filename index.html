@@ -39,9 +39,6 @@
       font-weight: bold;
       margin-bottom: 20px;
     }
-    .form-control {
-      width: 100%;
-    }
     .mobile-wrapper {
       position: relative;
     }
@@ -57,12 +54,7 @@
       font-weight: bold;
       color: #555;
     }
-    .form-check-label {
-      font-size: 14px;
-    }
-    .read-more {
-      display: none;
-    }
+    .read-more { display: none; }
     .read-toggle {
       color: #007BFF;
       border: none;
@@ -87,6 +79,8 @@
       color: #155724;
       font-weight: bold;
     }
+    #otpSection { display: none; margin-top: 15px; }
+    #donationSection { display: none; margin-top: 25px; }
   </style>
 </head>
 <body>
@@ -100,29 +94,24 @@
         <label for="name" class="form-label">Full Name*</label>
         <input type="text" class="form-control" id="name" required>
       </div>
-
       <div class="mb-3">
         <label for="mobile" class="form-label">Mobile Number*</label>
         <div class="mobile-wrapper">
           <input type="tel" class="form-control" id="mobile" pattern="[0-9]{10}" required placeholder="xxxxxxxxxx">
         </div>
       </div>
-
       <div class="mb-3">
         <label for="email" class="form-label">Email (Optional)</label>
         <input type="email" class="form-control" id="email">
       </div>
-
       <div class="mb-3">
         <label for="amount" class="form-label">Amount Donated* (Min ₹50)</label>
         <input type="number" class="form-control" id="amount" min="50" required>
       </div>
-
       <div class="mb-3">
         <label for="message" class="form-label">Message (Optional)</label>
         <textarea class="form-control" id="message" rows="2"></textarea>
       </div>
-
       <div class="form-check mb-2">
         <input class="form-check-input" type="checkbox" id="declaration" required>
         <label class="form-check-label" for="declaration">
@@ -131,57 +120,74 @@
           <button type="button" class="read-toggle" onclick="toggleReadMore()">Read More</button>
         </label>
       </div>
-
       <div class="form-check mb-4">
         <input class="form-check-input" type="checkbox" id="anonymous">
         <label class="form-check-label" for="anonymous">I opt to keep my name anonymous.</label>
       </div>
 
-      <div class="cf-turnstile" data-sitekey="0x4AAAAAABnuBDDS5ho0ShrZ"></div>
+      <div id="otpSection">
+        <label for="otp">Enter OTP:</label>
+        <input type="text" id="otp" class="form-control mt-1 mb-2">
+      </div>
 
-      <button type="button" class="btn btn-primary w-100 mt-3" id="submitBtn">Submit</button>
+      <div class="cf-turnstile mb-3" data-sitekey="0x4AAAAAABnuBDDS5ho0ShrZ"></div>
+      <button type="button" class="btn btn-primary w-100" id="submitBtn">Submit</button>
     </form>
 
-    <div id="otpSection" class="d-none mt-4">
-      <label for="otp">Enter OTP:</label>
-      <input type="text" id="otp" class="form-control mt-1">
-      <button type="button" id="verifyOTP" class="btn btn-primary mt-2">Submit OTP</button>
-      <div id="otpFeedback" class="fw-bold mt-2"></div>
-    </div>
-
     <div id="authConfirmed">✅ Mobile number authenticated. You may now proceed with your donation.</div>
+
+    <div id="donationSection">
+      <h4 class="mt-4">Choose your donation method:</h4>
+      <p><strong>1. Scan the QR Code below:</strong></p>
+      <img src="https://raw.githubusercontent.com/maayaanubhutifoundation/donate/main/IDBI_QR.jpg" alt="QR Code" class="img-fluid mb-3" style="max-width: 280px;">
+      <p><strong>2. UPI ID:</strong> <code>9599914274@idbi</code></p>
+      <p><strong>3. Bank Transfer (NEFT/RTGS):</strong></p>
+      <ul>
+        <li>A/C Name: Maaya Anubhuti Foundation</li>
+        <li>Bank: IDBI Bank</li>
+        <li>Account No: 0873102000012698</li>
+        <li>IFSC: IBKL0000873</li>
+        <li>Branch: Indirapuram, Ghaziabad</li>
+      </ul>
+      <h5 class="mt-4">Company Certificates</h5>
+      <div class="row">
+        <div class="col-6"><img src="https://raw.githubusercontent.com/maayaanubhutifoundation/donate/main/COI.jpg" class="img-fluid mb-3" onclick="this.requestFullscreen()"></div>
+        <div class="col-6"><img src="https://raw.githubusercontent.com/maayaanubhutifoundation/donate/main/INC-31.jpg" class="img-fluid mb-3" onclick="this.requestFullscreen()"></div>
+        <div class="col-6"><img src="https://raw.githubusercontent.com/maayaanubhutifoundation/donate/main/INC-13.jpg" class="img-fluid mb-3" onclick="this.requestFullscreen()"></div>
+        <div class="col-6"><img src="https://raw.githubusercontent.com/maayaanubhutifoundation/donate/main/Section%208%20License_AB4594945.jpg" class="img-fluid mb-3" onclick="this.requestFullscreen()"></div>
+      </div>
+    </div>
   </div>
 
   <script>
-    function toggleReadMore() {
-      const extra = document.getElementById("more");
-      const toggle = document.querySelector(".read-toggle");
-      if (extra.style.display === "inline") {
-        extra.style.display = "none";
-        toggle.textContent = "Read More";
-      } else {
-        extra.style.display = "inline";
-        toggle.textContent = "Read Less";
-      }
-    }
-
     const firebaseConfig = {
-      apiKey: "AIzaSyAG6BcfLCiBG4nX2dqa0YDCqtbgiET4qQg",
-      authDomain: "maaya-donation-project.firebaseapp.com",
-      projectId: "maaya-donation-project",
-      storageBucket: "maaya-donation-project.firebasestorage.app",
-      messagingSenderId: "893542409484",
-      appId: "1:893542409484:web:6ce0ff5bc7e51de69f1529"
+      apiKey: "AIzaSyDq-kByubokuaVQlBULa4GEc3PwBzyld1A",
+      authDomain: "maaya-anubhuti-donation-467813.firebaseapp.com",
+      projectId: "maaya-anubhuti-donation-467813",
+      storageBucket: "maaya-anubhuti-donation-467813.appspot.com",
+      messagingSenderId: "528279712349",
+      appId: "1:528279712349:web:78e6cb4aa3ce43dce0d3b4"
     };
     firebase.initializeApp(firebaseConfig);
 
     let confirmationResult;
     const otpSection = document.getElementById("otpSection");
     const authConfirmed = document.getElementById("authConfirmed");
+    const form = document.getElementById("donationForm");
+    const donationSection = document.getElementById("donationSection");
 
     document.getElementById("submitBtn").addEventListener("click", () => {
-      if (location.protocol === "file:") {
-        alert("Please deploy this page on HTTPS (e.g., GitHub Pages). Turnstile and Firebase will not work locally.");
+      const btn = document.getElementById("submitBtn");
+
+      if (btn.innerText === "Submit OTP") {
+        const otp = document.getElementById("otp").value;
+        confirmationResult.confirm(otp).then(() => {
+          authConfirmed.style.display = "block";
+          form.style.display = "none";
+          donationSection.style.display = "block";
+        }).catch(err => {
+          alert("OTP Verification Error: " + err.message);
+        });
         return;
       }
 
@@ -196,78 +202,24 @@
         return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
       }).then(result => {
         confirmationResult = result;
-        otpSection.classList.remove("d-none");
-        document.getElementById("submitBtn").disabled = true;
+        otpSection.style.display = "block";
+        btn.innerText = "Submit OTP";
       }).catch(err => {
         alert("Error sending OTP: " + err.message);
-        console.error("OTP Error:", err);
       });
     });
 
-    document.getElementById("verifyOTP").addEventListener("click", () => {
-      confirmationResult.confirm(document.getElementById("otp").value).then(() => {
-        const fb = document.getElementById("otpFeedback");
-        fb.textContent = "Authentication Successful";
-        fb.style.color = "green";
-        authConfirmed.style.display = "block";
-      }).catch(err => {
-        const fb = document.getElementById("otpFeedback");
-        fb.textContent = "Wrong OTP";
-        fb.style.color = "red";
-        console.error("OTP Verification Error:", err);
-      });
-    });
-  </script>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDq-kByubokuaVQlBULa4GEc3PwBzyld1A",
-    authDomain: "maaya-anubhuti-donation-467813.firebaseapp.com",
-    projectId: "maaya-anubhuti-donation-467813",
-    storageBucket: "maaya-anubhuti-donation-467813.firebasestorage.app",
-    messagingSenderId: "528279712349",
-    appId: "1:528279712349:web:78e6cb4aa3ce43dce0d3b4"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  let confirmationResult;
-
-  const form = document.getElementById('donationForm');
-  const otpInput = document.getElementById('otp');
-  const otpSection = document.getElementById('otpSection');
-  const submitBtn = document.getElementById('submitBtn');
-  const donationBlock = document.getElementById('donationDetails');
-  const certBlock = document.getElementById('certificates');
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const mobile = "+91" + document.getElementById('mobile').value;
-
-    // If OTP input is visible, this is second submission
-    if (!otpSection.classList.contains('hidden')) {
-      const otp = otpInput.value;
-      try {
-        await confirmationResult.confirm(otp);
-        form.classList.add('hidden');
-        donationBlock.classList.remove('hidden');
-        certBlock.classList.remove('hidden');
-      } catch (err) {
-        alert("OTP Error: " + err.message);
-      }
-    } else {
-      try {
-        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('submitBtn', {
-          size: 'invisible',
-          callback: () => {}
-        });
-        confirmationResult = await auth.signInWithPhoneNumber(mobile, window.recaptchaVerifier);
-        otpSection.classList.remove('hidden');
-        alert('OTP sent. Please enter it above.');
-      } catch (err) {
-        alert("Error sending OTP: " + err.message);
+    function toggleReadMore() {
+      const extra = document.getElementById("more");
+      const toggle = document.querySelector(".read-toggle");
+      if (extra.style.display === "inline") {
+        extra.style.display = "none";
+        toggle.textContent = "Read More";
+      } else {
+        extra.style.display = "inline";
+        toggle.textContent = "Read Less";
       }
     }
-  });
-</script>
+  </script>
 </body>
-</html>```
+</html>
