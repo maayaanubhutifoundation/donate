@@ -231,6 +231,11 @@
     const otpSection = document.getElementById("otpSection");
     const otpInput = document.getElementById("otp");
     const otpFeedback = document.getElementById("otpFeedback");
+    otpInput.addEventListener("input", () => {
+       if (otpInput.value.length === 6 && confirmationResult) {
+       submitBtn.click();
+     }
+   });
     const authConfirmed = document.getElementById("authConfirmed");
     const donationForm = document.getElementById("donationForm");
     const donationOptions = document.getElementById("donationOptions");
@@ -240,7 +245,10 @@
         const phone = "+91" + document.getElementById("mobile").value;
         const amount = parseInt(document.getElementById("amount").value);
         if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
-        if (!/\+91[6-9]\d{9}/.test(phone)) return alert("Invalid phone.");
+        if (!/^(\+91)?[6-9]\d{9}$/.test(phone)) {
+          alert("Please enter a valid 10-digit mobile number starting with 6–9.");
+          return;
+       }
         if (isNaN(amount) || amount < 50) return alert("Min ₹50 required.");
 
         window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('submitBtn', { size: 'invisible' });
@@ -250,9 +258,12 @@
           confirmationResult = result;
           otpSection.classList.remove("d-none");
           otpInput.focus();
-          submitBtn.textContent = "Submit OTP for Donation";
-        }).catch(err => {
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Submit OTP for Donation...";
+        .catch(err => {
           alert("Error sending OTP: " + err.message);
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit";
         });
       } else {
         confirmationResult.confirm(otpInput.value).then(() => {
