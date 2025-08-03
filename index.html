@@ -1,49 +1,291 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Test Google Sheet Logging</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Donate to Maaya Anubhuti Foundation</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 30px; background: #f5f5f5; }
-    .container { background: white; padding: 20px; max-width: 500px; margin: auto; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    button { margin-top: 20px; padding: 10px 20px; }
+    body {
+      background-color: #7846e4;
+      padding: 40px 10px;
+    }
+    .container {
+      max-width: 720px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #e68a00;
+      text-align: center;
+      margin-bottom: 5px;
+    }
+    .lead {
+      font-size: 1rem;
+      color: #444;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .form-control {
+      width: 100%;
+    }
+    .mobile-wrapper {
+      position: relative;
+    }
+    .mobile-wrapper input {
+      padding-left: 50px;
+    }
+    .mobile-wrapper::before {
+      content: "+91";
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: bold;
+      color: #555;
+    }
+    .btn-primary {
+      background-color: #ff9900;
+      border: none;
+    }
+    .btn-primary:hover {
+      background-color: #e68a00;
+    }
+    #authConfirmed {
+      display: none;
+      margin-top: 20px;
+      padding: 12px;
+      background-color: #e8f8ec;
+      border-left: 5px solid green;
+      color: #155724;
+      font-weight: bold;
+    }
+    #donationOptions {
+      display: none;
+      margin-top: 20px;
+    }
+    #otpSection {
+      margin-bottom: 15px;
+      background-color: #eef5ff;
+      padding: 15px;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>🧪 Test Google Sheet Webhook</h2>
-    <p>This sends sample donor data to your Google Sheet Web App. Click the button below to test.</p>
-    
-    <button onclick="sendTest()">Send Test Data</button>
+    <h1>Support Maaya Anubhuti Foundation 💛</h1>
+    <p class="lead">
+      Your generous donation helps us care for the elderly, build a compassionate environment, and train youth to serve with dignity. Join us in bringing hope and care to those who need it most.
+    </p>
 
-    <div id="response" style="margin-top:15px; font-weight: bold;"></div>
+    <form id="donationForm">
+      <div class="mb-3">
+        <label class="form-label">Full Name*</label>
+        <input type="text" class="form-control" id="name" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Mobile Number*</label>
+        <div class="mobile-wrapper">
+          <input type="tel" class="form-control" id="mobile" pattern="[0-9]{10}" required placeholder="xxxxxxxxxx">
+        </div>
+      </div>
+      <div id="otpSection" class="d-none">
+        <label for="otp">Enter OTP:</label>
+        <input type="text" id="otp" class="form-control mt-1" autofocus />
+        <div id="otpFeedback" class="fw-bold mt-2"></div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Email (Optional)</label>
+        <input type="email" class="form-control" id="email">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Amount Donated* (Min ₹50)</label>
+        <input type="number" class="form-control" id="amount" min="50" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Address (Optional)</label>
+        <input type="text" class="form-control" id="address">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Message (Optional)</label>
+        <textarea class="form-control" id="message" rows="2"></textarea>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" id="declaration" required>
+        <label class="form-check-label" for="declaration">
+          I hereby declare I am an Indian citizen...
+          <span id="more" style="display: none;"> donating my own funds. I consent to contact via WhatsApp/email/SMS for donation updates, receipts, or campaigns.</span>
+          <button type="button" id="readToggle" class="btn btn-link p-0" style="font-size: 13px;" onclick="toggleReadMore()">Read More</button>
+        </label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" id="anonymous">
+        <label class="form-check-label" for="anonymous">I opt to keep my name anonymous.</label>
+      </div>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="receipt">
+        <label class="form-check-label" for="receipt">I would like to receive the receipt via WhatsApp/email.</label>
+      </div>
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAABnuBDDS5ho0ShrZ"></div>
+      <button type="button" class="btn btn-primary w-100 mt-3" id="submitBtn">Submit</button>
+    </form>
+
+    <div id="authConfirmed">✅ Mobile number authenticated. You may now proceed with your donation.</div>
+
+    <div id="donationOptions">
+      <h5 class="mt-3">Donation Options</h5>
+      <div class="row text-center">
+        <div class="col-md-4 mb-3">
+          <div class="card h-100">
+            <div class="card-body">
+              <div style="font-size: 30px;">💳</div>
+              <h6 class="card-title mt-2">Scan & Pay</h6>
+              <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=384,h=448,fit=crop/A0xj3j1bO7C10DBz/qr_code-m6Lb0BlRRqs7MEGd.png" alt="QR" class="img-fluid" style="max-width: 120px;">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <div class="card h-100">
+            <div class="card-body">
+              <div style="font-size: 30px;">🔢</div>
+              <h6 class="card-title mt-2">UPI ID</h6>
+              <p id="upiText">9599914274@idbi</p>
+              <button onclick="copyText('upiText')" class="btn btn-sm btn-outline-primary">Copy UPI ID</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <div class="card h-100">
+            <div class="card-body">
+              <div style="font-size: 30px;">🏦</div>
+              <h6 class="card-title mt-2">Bank Transfer</h6>
+              <small>
+                A/C No: <span id="accNo">0873102000012698</span><br>
+                IFSC: IBKL0000873<br>
+                Bank: IDBI Bank<br>
+                Branch: Indirapuram, Ghaziabad
+              </small><br>
+              <button onclick="copyText('accNo')" class="btn btn-sm btn-outline-primary mt-2">Copy Account No</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="text-muted small mt-3">
+        Maaya Anubhuti Foundation is a registered Section 8 Non-profit organisation (License No. 169918, CIN: U86900UP2025NPL226294, PAN: AATCM5136F).
+      </p>
+    </div>
   </div>
 
   <script>
-    function sendTest() {
-      document.getElementById("response").textContent = "Sending...";
-
-      fetch("https://script.google.com/macros/s/AKfycbzkQ2yaa-yHOkOHhlPjoC1GdvSf8UBwvQ29Gcxmvcp5IvzTHugJg764OdSOjZr_wew/exec", {
-        method: "POST",
-        body: JSON.stringify({
-          name: "Dr Akshay Bahadur",
-          phone: "9999999999",
-          email: "care@maayaanubhuti.org",
-          amount: "500",
-          message: "Test donation",
-          address: "Delhi NCR",
-          anonymous: false
-        }),
-        headers: { "Content-Type": "application/json" }
-      })
-      .then(res => res.text())
-      .then(data => {
-        document.getElementById("response").textContent = "✅ Response: " + data;
-      })
-      .catch(err => {
-        document.getElementById("response").textContent = "❌ Error: " + err.message;
-      });
+    function toggleReadMore() {
+      const moreText = document.getElementById("more");
+      const btn = document.getElementById("readToggle");
+      if (moreText.style.display === "none") {
+        moreText.style.display = "inline";
+        btn.textContent = "Read Less";
+      } else {
+        moreText.style.display = "none";
+        btn.textContent = "Read More";
+      }
     }
+
+    function copyText(id) {
+      const text = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(text).then(() => alert("Copied: " + text));
+    }
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAG6BcfLCiBG4nX2dqa0YDCqtbgiET4qQg",
+      authDomain: "maaya-donation-project.firebaseapp.com",
+      projectId: "maaya-donation-project",
+      storageBucket: "maaya-donation-project.appspot.com",
+      messagingSenderId: "893542409484",
+      appId: "1:893542409484:web:6ce0ff5bc7e51de69f1529"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    let confirmationResult;
+    const submitBtn = document.getElementById("submitBtn");
+    const otpSection = document.getElementById("otpSection");
+    const otpInput = document.getElementById("otp");
+    const otpFeedback = document.getElementById("otpFeedback");
+    const authConfirmed = document.getElementById("authConfirmed");
+    const donationForm = document.getElementById("donationForm");
+    const donationOptions = document.getElementById("donationOptions");
+
+    otpInput.addEventListener("input", () => {
+      if (otpInput.value.length === 6 && confirmationResult) submitBtn.click();
+    });
+
+    submitBtn.addEventListener("click", () => {
+      const mobileValue = document.getElementById("mobile").value;
+      const amount = parseInt(document.getElementById("amount").value);
+
+      if (!/^([6-9])\d{9}$/.test(mobileValue)) {
+        alert("Please enter a valid 10-digit mobile number starting with 6–9.");
+        return;
+      }
+      if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
+      if (isNaN(amount) || amount < 50) return alert("Minimum ₹50 donation required.");
+
+      const phone = "+91" + mobileValue;
+
+      if (!confirmationResult) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending OTP...";
+        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('submitBtn', { size: 'invisible' });
+        window.recaptchaVerifier.verify().then(() => {
+          return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
+        }).then(result => {
+          confirmationResult = result;
+          otpSection.classList.remove("d-none");
+          otpInput.focus();
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit OTP for Donation";
+        }).catch(err => {
+          alert("Error sending OTP: " + err.message);
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit";
+        });
+      } else {
+   confirmationResult.confirm(otpInput.value).then(() => {
+     // Show confirmation UI
+     authConfirmed.style.display = "block";
+     donationForm.style.display = "none";
+     donationOptions.style.display = "block";
+
+     // ✅ POST to Google Sheet after successful OTP
+     fetch("https://script.google.com/macros/s/AKfycbzkQ2yaa-yHOkOHhlPjoC1GdvSf8UBwvQ29Gcxmvcp5IvzTHugJg764OdSOjZr_wew/exec", {
+       method: "POST",
+       body: JSON.stringify({
+         name: document.getElementById("name").value,
+         phone: document.getElementById("mobile").value,
+         email: document.getElementById("email").value,
+         amount: document.getElementById("amount").value,
+         message: document.getElementById("message").value,
+         address: document.getElementById("address").value,
+         anonymous: document.getElementById("anonymous").checked
+       }),
+       headers: {
+         "Content-Type": "application/json"
+       }
+     }).then(res => console.log("Submitted to Google Sheet"))
+       .catch(err => console.error("Sheet error:", err));
+
+   }).catch(err => {
+     otpFeedback.textContent = "Wrong OTP";
+     otpFeedback.style.color = "red";
+   });
+      }
+    });
   </script>
 </body>
 </html>
