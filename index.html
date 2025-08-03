@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,17 +22,22 @@
       border-radius: 10px;
       box-shadow: 0 0 12px rgba(0,0,0,0.1);
     }
-    h1, h3 {
+    h1 {
       color: #e68a00;
       text-align: center;
+      margin-bottom: 10px;
     }
-    p.description, p.note {
+    p.description {
       text-align: center;
+      color: #5e4300;
       font-size: 16px;
+      margin-bottom: 15px;
     }
     p.note {
+      text-align: center;
       color: #a94442;
       font-weight: bold;
+      margin-bottom: 20px;
     }
     .form-control {
       width: 100%;
@@ -74,9 +78,6 @@
     .btn-primary:hover {
       background-color: #e68a00;
     }
-    #otpSection, #donationOptions {
-      display: none;
-    }
     #authConfirmed {
       display: none;
       margin-top: 20px;
@@ -86,15 +87,17 @@
       color: #155724;
       font-weight: bold;
     }
-    .donation-section img {
-      max-width: 100%;
-      height: auto;
-      margin: 10px 0;
+    #otpSection {
+      margin-bottom: 15px;
+    }
+    #donationOptions {
+      display: none;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <div class="container" id="mainContainer">
+  <div class="container">
     <h1>Support Maaya Anubhuti Foundation 💛</h1>
     <p class="description">Empowering elderly care and youth training. Join this noble journey with your kind support.</p>
     <p class="note">Please verify your mobile number before proceeding to donation.</p>
@@ -112,9 +115,9 @@
         </div>
       </div>
 
-      <div id="otpSection" class="mb-3">
+      <div id="otpSection" class="d-none">
         <label for="otp">Enter OTP:</label>
-        <input type="text" id="otp" class="form-control mt-1">
+        <input type="text" id="otp" class="form-control mt-1" />
         <div id="otpFeedback" class="fw-bold mt-2"></div>
       </div>
 
@@ -154,20 +157,20 @@
 
     <div id="authConfirmed">✅ Mobile number authenticated. You may now proceed with your donation.</div>
 
-    <div id="donationOptions" class="donation-section mt-4">
-      <h3>Make Your Donation</h3>
+    <div id="donationOptions">
+      <h5 class="mt-4">Make Your Donation</h5>
       <p>Your generous donation to Maaya Anubhuti helps us provide compassionate care for the elderly, build safe and comfortable old age homes, and empower underprivileged youth with training to become skilled caregivers.</p>
-      <h5>UPI Payment Options:</h5>
       <p><strong>UPI ID:</strong> 9599914274@idbi</p>
-      <p><strong>QR Code:</strong></p>
-      <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=896,fit=crop/A0xj3j1bO7C10DBz/qr_code-m6Lb0BlRRqs7MEGd.png" alt="QR Code for UPI" />
+      <p><strong>Scan QR Code:</strong></p>
+      <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=896,fit=crop/A0xj3j1bO7C10DBz/qr_code-m6Lb0BlRRqs7MEGd.png" alt="UPI QR" class="img-fluid mb-3"/>
 
-      <h5 class="mt-4">Bank Transfer:</h5>
-      <p><strong>Account Name:</strong> Maaya Anubhuti Foundation<br>
-         <strong>Account Number:</strong> 0873102000012698<br>
-         <strong>IFSC Code:</strong> IBKL0000873<br>
-         <strong>Bank Name:</strong> IDBI Bank Ltd.<br>
-         <strong>Branch:</strong> Indirapuram, Ghaziabad, UP</p>
+      <p><strong>Bank Transfer Details:</strong><br/>
+        Account Name: Maaya Anubhuti Foundation<br/>
+        Account Number: 0873102000012698<br/>
+        IFSC Code: IBKL0000873<br/>
+        Bank: IDBI Bank Ltd.<br/>
+        Branch: Indirapuram, Ghaziabad, UP
+      </p>
     </div>
   </div>
 
@@ -175,36 +178,33 @@
     function toggleReadMore() {
       const extra = document.getElementById("more");
       const toggle = document.querySelector(".read-toggle");
-      extra.style.display = extra.style.display === "inline" ? "none" : "inline";
-      toggle.textContent = toggle.textContent === "Read More" ? "Read Less" : "Read More";
+      extra.style.display = (extra.style.display === "inline") ? "none" : "inline";
+      toggle.textContent = (extra.style.display === "inline") ? "Read Less" : "Read More";
     }
 
     const firebaseConfig = {
       apiKey: "AIzaSyAG6BcfLCiBG4nX2dqa0YDCqtbgiET4qQg",
       authDomain: "maaya-donation-project.firebaseapp.com",
       projectId: "maaya-donation-project",
-      storageBucket: "maaya-donation-project.firebasestorage.app",
+      storageBucket: "maaya-donation-project.appspot.com",
       messagingSenderId: "893542409484",
       appId: "1:893542409484:web:6ce0ff5bc7e51de69f1529"
     };
     firebase.initializeApp(firebaseConfig);
 
     let confirmationResult;
-    const otpInput = document.getElementById("otp");
-    const otpSection = document.getElementById("otpSection");
     const submitBtn = document.getElementById("submitBtn");
-    const donationForm = document.getElementById("donationForm");
+    const otpSection = document.getElementById("otpSection");
+    const otpInput = document.getElementById("otp");
+    const otpFeedback = document.getElementById("otpFeedback");
     const authConfirmed = document.getElementById("authConfirmed");
+    const donationForm = document.getElementById("donationForm");
     const donationOptions = document.getElementById("donationOptions");
 
-    let otpMode = false;
-
     submitBtn.addEventListener("click", () => {
-      if (location.protocol === "file:") return alert("Please deploy on HTTPS.");
-      const phone = "+91" + document.getElementById("mobile").value;
-      const amount = parseInt(document.getElementById("amount").value);
-
-      if (!otpMode) {
+      if (!confirmationResult) {
+        const phone = "+91" + document.getElementById("mobile").value;
+        const amount = parseInt(document.getElementById("amount").value);
         if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
         if (!/\+91[6-9]\d{9}/.test(phone)) return alert("Invalid phone.");
         if (isNaN(amount) || amount < 50) return alert("Min ₹50 required.");
@@ -214,22 +214,19 @@
           return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
         }).then(result => {
           confirmationResult = result;
-          otpSection.style.display = "block";
-          otpMode = true;
+          otpSection.classList.remove("d-none");
           submitBtn.textContent = "Submit OTP for Donation";
         }).catch(err => {
           alert("Error sending OTP: " + err.message);
         });
       } else {
         confirmationResult.confirm(otpInput.value).then(() => {
-          document.getElementById("otpFeedback").textContent = "Authentication Successful";
-          document.getElementById("otpFeedback").style.color = "green";
           authConfirmed.style.display = "block";
           donationForm.style.display = "none";
           donationOptions.style.display = "block";
         }).catch(err => {
-          document.getElementById("otpFeedback").textContent = "Wrong OTP";
-          document.getElementById("otpFeedback").style.color = "red";
+          otpFeedback.textContent = "Wrong OTP";
+          otpFeedback.style.color = "red";
         });
       }
     });
