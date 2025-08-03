@@ -22,7 +22,7 @@
       border-radius: 10px;
       box-shadow: 0 0 12px rgba(0,0,0,0.1);
     }
-    h1, h3 {
+    h1 {
       color: #e68a00;
       text-align: center;
       margin-bottom: 10px;
@@ -78,12 +78,14 @@
     .btn-primary:hover {
       background-color: #e68a00;
     }
-    #otpSection {
-      margin-top: 20px;
-    }
-    #authConfirmed, #postAuthContent {
+    #authConfirmed {
       display: none;
-      margin-top: 30px;
+      margin-top: 20px;
+      padding: 12px;
+      background-color: #e8f8ec;
+      border-left: 5px solid green;
+      color: #155724;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -125,49 +127,49 @@
         <input class="form-check-input" type="checkbox" id="declaration" required>
         <label class="form-check-label" for="declaration">
           I hereby declare I am an Indian citizen donating my own funds.
+          <span id="more" class="read-more"> I consent to contact via WhatsApp/email/SMS for donation updates, receipts, or campaigns.</span>
+          <button type="button" class="read-toggle" onclick="toggleReadMore()">Read More</button>
         </label>
       </div>
 
-      <div class="form-check mb-3">
+      <div class="form-check mb-4">
         <input class="form-check-input" type="checkbox" id="anonymous">
         <label class="form-check-label" for="anonymous">I opt to keep my name anonymous.</label>
       </div>
 
-      <div id="otpSection" class="d-none">
-        <label for="otp">Enter OTP:</label>
-        <input type="text" id="otp" class="form-control mt-1 mb-2">
-        <div id="otpFeedback" class="fw-bold mt-1"></div>
-      </div>
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAABnuBDDS5ho0ShrZ"></div>
 
-      <div class="cf-turnstile mb-3" data-sitekey="0x4AAAAAABnuBDDS5ho0ShrZ"></div>
-      <button type="button" class="btn btn-primary w-100" id="submitBtn">Submit</button>
+      <button type="button" class="btn btn-primary w-100 mt-3" id="submitBtn">Submit</button>
     </form>
 
-    <div id="authConfirmed" class="alert alert-success">✅ Mobile number authenticated. You may now proceed with your donation.</div>
-
-    <div id="postAuthContent">
-      <h3>Make Your Donation</h3>
-      <p>Your generous donation to Maaya Anubhuti helps us provide compassionate care for the elderly, build safe and comfortable old age homes, and empower underprivileged youth with training to become skilled caregivers. Every contribution, big or small, makes a meaningful impact. Please choose a donation method below:</p>
-      <h5>UPI Payment Options:</h5>
-      <p><strong>UPI ID:</strong> 9599914274@idbi</p>
-      <p><strong>Scan QR Code:</strong></p>
-      <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=896,fit=crop/A0xj3j1bO7C10DBz/qr_code-m6Lb0BlRRqs7MEGd.png" alt="UPI QR" class="img-fluid mb-3"/>
-
-      <h5>Bank Transfer:</h5>
-      <p><strong>Account Name:</strong> Maaya Anubhuti Foundation<br>
-      <strong>Account Number:</strong> 0873102000012698<br>
-      <strong>IFSC Code:</strong> IBKL0000873<br>
-      <strong>Bank:</strong> IDBI Bank Ltd.<br>
-      <strong>Branch:</strong> Indirapuram, Ghaziabad, UP</p>
+    <div id="otpSection" class="d-none mt-4">
+      <label for="otp">Enter OTP:</label>
+      <input type="text" id="otp" class="form-control mt-1">
+      <button type="button" id="verifyOTP" class="btn btn-primary mt-2">Submit OTP</button>
+      <div id="otpFeedback" class="fw-bold mt-2"></div>
     </div>
+
+    <div id="authConfirmed">✅ Mobile number authenticated. You may now proceed with your donation.</div>
   </div>
 
   <script>
+    function toggleReadMore() {
+      const extra = document.getElementById("more");
+      const toggle = document.querySelector(".read-toggle");
+      if (extra.style.display === "inline") {
+        extra.style.display = "none";
+        toggle.textContent = "Read More";
+      } else {
+        extra.style.display = "inline";
+        toggle.textContent = "Read Less";
+      }
+    }
+
     const firebaseConfig = {
       apiKey: "AIzaSyAG6BcfLCiBG4nX2dqa0YDCqtbgiET4qQg",
       authDomain: "maaya-donation-project.firebaseapp.com",
       projectId: "maaya-donation-project",
-      storageBucket: "maaya-donation-project.appspot.com",
+      storageBucket: "maaya-donation-project.firebasestorage.app",
       messagingSenderId: "893542409484",
       appId: "1:893542409484:web:6ce0ff5bc7e51de69f1529"
     };
@@ -176,43 +178,96 @@
     let confirmationResult;
     const otpSection = document.getElementById("otpSection");
     const authConfirmed = document.getElementById("authConfirmed");
-    const postAuthContent = document.getElementById("postAuthContent");
-    const submitBtn = document.getElementById("submitBtn");
 
-    let otpMode = false;
-
-    submitBtn.addEventListener("click", () => {
-      const phone = "+91" + document.getElementById("mobile").value;
-      const otp = document.getElementById("otp").value;
-
-      if (!otpMode) {
-        const amount = parseInt(document.getElementById("amount").value);
-        if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
-        if (!/\+91[6-9]\d{9}/.test(phone)) return alert("Invalid phone.");
-        if (isNaN(amount) || amount < 50) return alert("Min ₹50 required.");
-
-        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('submitBtn', { size: 'invisible' });
-        window.recaptchaVerifier.verify().then(() => {
-          return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
-        }).then(result => {
-          confirmationResult = result;
-          otpSection.classList.remove("d-none");
-          submitBtn.textContent = "Submit OTP";
-          otpMode = true;
-        }).catch(err => {
-          alert("Error sending OTP: " + err.message);
-        });
-      } else {
-        confirmationResult.confirm(otp).then(() => {
-          authConfirmed.style.display = "block";
-          document.getElementById("donationForm").style.display = "none";
-          postAuthContent.style.display = "block";
-        }).catch(err => {
-          document.getElementById("otpFeedback").textContent = "Wrong OTP";
-          document.getElementById("otpFeedback").style.color = "red";
-        });
+    document.getElementById("submitBtn").addEventListener("click", () => {
+      if (location.protocol === "file:") {
+        alert("Please deploy this page on HTTPS (e.g., GitHub Pages). Turnstile and Firebase will not work locally.");
+        return;
       }
+
+      const phone = "+91" + document.getElementById("mobile").value;
+      const amount = parseInt(document.getElementById("amount").value);
+      if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
+      if (!/\+91[6-9]\d{9}/.test(phone)) return alert("Invalid phone.");
+      if (isNaN(amount) || amount < 50) return alert("Min ₹50 required.");
+
+      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('submitBtn', { size: 'invisible' });
+      window.recaptchaVerifier.verify().then(() => {
+        return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
+      }).then(result => {
+        confirmationResult = result;
+        otpSection.classList.remove("d-none");
+        document.getElementById("submitBtn").disabled = true;
+      }).catch(err => {
+        alert("Error sending OTP: " + err.message);
+        console.error("OTP Error:", err);
+      });
+    });
+
+    document.getElementById("verifyOTP").addEventListener("click", () => {
+      confirmationResult.confirm(document.getElementById("otp").value).then(() => {
+        const fb = document.getElementById("otpFeedback");
+        fb.textContent = "Authentication Successful";
+        fb.style.color = "green";
+        authConfirmed.style.display = "block";
+      }).catch(err => {
+        const fb = document.getElementById("otpFeedback");
+        fb.textContent = "Wrong OTP";
+        fb.style.color = "red";
+        console.error("OTP Verification Error:", err);
+      });
     });
   </script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDq-kByubokuaVQlBULa4GEc3PwBzyld1A",
+    authDomain: "maaya-anubhuti-donation-467813.firebaseapp.com",
+    projectId: "maaya-anubhuti-donation-467813",
+    storageBucket: "maaya-anubhuti-donation-467813.firebasestorage.app",
+    messagingSenderId: "528279712349",
+    appId: "1:528279712349:web:78e6cb4aa3ce43dce0d3b4"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  let confirmationResult;
+
+  const form = document.getElementById('donationForm');
+  const otpInput = document.getElementById('otp');
+  const otpSection = document.getElementById('otpSection');
+  const submitBtn = document.getElementById('submitBtn');
+  const donationBlock = document.getElementById('donationDetails');
+  const certBlock = document.getElementById('certificates');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const mobile = "+91" + document.getElementById('mobile').value;
+
+    // If OTP input is visible, this is second submission
+    if (!otpSection.classList.contains('hidden')) {
+      const otp = otpInput.value;
+      try {
+        await confirmationResult.confirm(otp);
+        form.classList.add('hidden');
+        donationBlock.classList.remove('hidden');
+        certBlock.classList.remove('hidden');
+      } catch (err) {
+        alert("OTP Error: " + err.message);
+      }
+    } else {
+      try {
+        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('submitBtn', {
+          size: 'invisible',
+          callback: () => {}
+        });
+        confirmationResult = await auth.signInWithPhoneNumber(mobile, window.recaptchaVerifier);
+        otpSection.classList.remove('hidden');
+        alert('OTP sent. Please enter it above.');
+      } catch (err) {
+        alert("Error sending OTP: " + err.message);
+      }
+    }
+  });
+</script>
 </body>
-</html>
+</html>```
