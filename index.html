@@ -177,10 +177,12 @@
       <div class="form-check mb-2">
         <input class="form-check-input" type="checkbox" id="declaration" required>
         <label class="form-check-label" for="declaration">
-          I hereby declare I am an Indian citizen donating my own funds.
-          <span id="more" class="read-more"> I consent to contact via WhatsApp/email/SMS for donation updates, receipts, or campaigns.</span>
-          <button type="button" class="read-toggle" onclick="toggleReadMore()">Read More</button>
-        </label>
+  I hereby declare I am an Indian citizen donating my own funds.
+  <span id="more" style="display: none;">
+    I consent to contact via WhatsApp/email/SMS for donation updates, receipts, or campaigns.
+  </span>
+  <button type="button" class="read-toggle btn btn-link p-0" style="font-size: 13px;" onclick="toggleReadMore()">Read More</button>
+</label>
       </div>
 
       <div class="form-check mb-2">
@@ -203,11 +205,17 @@
 
   <script>
     function toggleReadMore() {
-      const extra = document.getElementById("more");
-      const toggle = document.querySelector(".read-toggle");
-      extra.style.display = (extra.style.display === "inline") ? "none" : "inline";
-      toggle.textContent = (extra.style.display === "inline") ? "Read Less" : "Read More";
-    }
+  const extra = document.getElementById("more");
+  const toggle = document.querySelector(".read-toggle");
+
+  if (extra.style.display === "none") {
+    extra.style.display = "inline";
+    toggle.textContent = "Read Less";
+  } else {
+    extra.style.display = "none";
+    toggle.textContent = "Read More";
+  }
+}
 
     function copyText(id) {
       const text = document.getElementById(id).innerText;
