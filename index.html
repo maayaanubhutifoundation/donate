@@ -184,6 +184,9 @@
     </div>
   </div>
 
+  <!-- Hidden Firebase Recaptcha Container -->
+  <div id="recaptcha-container" style="display: none;"></div>
+
   <script>
     function toggleReadMore() {
       const moreText = document.getElementById("more");
@@ -242,7 +245,7 @@
         submitBtn.disabled = true;
         submitBtn.textContent = "Sending OTP...";
         try {
-          window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('submitBtn', { size: 'invisible' });
+          window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
           window.recaptchaVerifier.verify().then(() => {
             return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
           }).then(result => {
@@ -257,7 +260,7 @@
             submitBtn.textContent = "Submit";
           });
         } catch (e) {
-          alert("ReCAPTCHA error. Please reload and try again.");
+          alert("Unexpected error. Please reload and try again.");
           submitBtn.disabled = false;
           submitBtn.textContent = "Submit";
         }
@@ -267,31 +270,29 @@
           donationForm.style.display = "none";
           donationOptions.style.display = "block";
 
-         // ✅ Send to Make.com webhook with full donor data
-        fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          name: document.getElementById("name").value,
-          phone: document.getElementById("mobile").value,
-          email: document.getElementById("email").value,
-          amount: document.getElementById("amount").value,
-          message: document.getElementById("message").value,
-          address: document.getElementById("address").value,
-          anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
-          receipt: document.getElementById("receipt").checked ? "Yes" : "No",
-          status: "Verified",
-          verified: "Yes"
-        })
-      })
-      .then(() => console.log("✅ Sent to Make.com"))
-      .catch(err => console.error("❌ Make error:", err));
+          fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              timestamp: new Date().toISOString(),
+              name: document.getElementById("name").value,
+              phone: document.getElementById("mobile").value,
+              email: document.getElementById("email").value,
+              amount: document.getElementById("amount").value,
+              message: document.getElementById("message").value,
+              address: document.getElementById("address").value,
+              anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
+              receipt: document.getElementById("receipt").checked ? "Yes" : "No",
+              status: "Verified",
+              verified: "Yes"
+            })
+          }).then(() => console.log("✅ Sent to Make.com"))
+            .catch(err => console.error("❌ Make error:", err));
 
-      }).catch(err => {
-        otpFeedback.textContent = "Wrong OTP";
-        otpFeedback.style.color = "red";
-      });
+        }).catch(err => {
+          otpFeedback.textContent = "Wrong OTP";
+          otpFeedback.style.color = "red";
+        });
       }
     });
   </script>
