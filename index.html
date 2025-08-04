@@ -267,27 +267,31 @@
           donationForm.style.display = "none";
           donationOptions.style.display = "block";
 
-          // ✅ Send to Make.com webhook
-          fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name: document.getElementById("name").value,
-              phone: document.getElementById("mobile").value,
-              email: document.getElementById("email").value,
-              amount: document.getElementById("amount").value,
-              message: document.getElementById("message").value,
-              address: document.getElementById("address").value,
-              anonymous: document.getElementById("anonymous").checked,
-              receipt: document.getElementById("receipt").checked
-            })
-          }).then(() => console.log("✅ Sent to Make.com"))
-            .catch(err => console.error("❌ Make error:", err));
+         // ✅ Send to Make.com webhook with full donor data
+        fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          timestamp: new Date().toISOString(),
+          name: document.getElementById("name").value,
+          phone: document.getElementById("mobile").value,
+          email: document.getElementById("email").value,
+          amount: document.getElementById("amount").value,
+          message: document.getElementById("message").value,
+          address: document.getElementById("address").value,
+          anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
+          receipt: document.getElementById("receipt").checked ? "Yes" : "No",
+          status: "Verified",
+          verified: "Yes"
+        })
+      })
+      .then(() => console.log("✅ Sent to Make.com"))
+      .catch(err => console.error("❌ Make error:", err));
 
-        }).catch(err => {
-          otpFeedback.textContent = "Wrong OTP";
-          otpFeedback.style.color = "red";
-        });
+      }).catch(err => {
+        otpFeedback.textContent = "Wrong OTP";
+        otpFeedback.style.color = "red";
+      });
       }
     });
   </script>
