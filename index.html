@@ -184,9 +184,116 @@
     </div>
   </div>
 
-  <!-- JS Script -->
   <script>
-    // The script block inserted here below
+    function toggleReadMore() {
+      const moreText = document.getElementById("more");
+      const btn = document.getElementById("readToggle");
+      if (moreText.style.display === "none") {
+        moreText.style.display = "inline";
+        btn.textContent = "Read Less";
+      } else {
+        moreText.style.display = "none";
+        btn.textContent = "Read More";
+      }
+    }
+
+    function copyText(id) {
+      const text = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(text).then(() => alert("Copied: " + text));
+    }
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAG6BcfLCiBG4nX2dqa0YDCqtbgiET4qQg",
+      authDomain: "maaya-donation-project.firebaseapp.com",
+      projectId: "maaya-donation-project",
+      storageBucket: "maaya-donation-project.appspot.com",
+      messagingSenderId: "893542409484",
+      appId: "1:893542409484:web:6ce0ff5bc7e51de69f1529"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    let confirmationResult;
+    const submitBtn = document.getElementById("submitBtn");
+    const otpSection = document.getElementById("otpSection");
+    const otpInput = document.getElementById("otp");
+    const otpFeedback = document.getElementById("otpFeedback");
+    const authConfirmed = document.getElementById("authConfirmed");
+    const donationForm = document.getElementById("donationForm");
+    const donationOptions = document.getElementById("donationOptions");
+
+    otpInput.addEventListener("input", () => {
+      if (otpInput.value.length === 6 && confirmationResult) submitBtn.click();
+    });
+
+    submitBtn.addEventListener("click", () => {
+      const mobileValue = document.getElementById("mobile").value;
+      const amount = parseInt(document.getElementById("amount").value);
+
+      if (!/^([6-9])\d{9}$/.test(mobileValue)) {
+        alert("Please enter a valid 10-digit mobile number starting with 6–9.");
+        return;
+      }
+      if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
+      if (isNaN(amount) || amount < 50) return alert("Minimum ₹50 donation required.");
+
+      const phone = "+91" + mobileValue;
+
+      if (!confirmationResult) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending OTP...";
+        try {
+          window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('submitBtn', { size: 'invisible' });
+          window.recaptchaVerifier.verify().then(() => {
+            return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
+          }).then(result => {
+            confirmationResult = result;
+            otpSection.classList.remove("d-none");
+            otpInput.focus();
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit OTP for Donation";
+          }).catch(err => {
+            alert("Error sending OTP: " + err.message);
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit";
+          });
+        } catch (e) {
+          alert("ReCAPTCHA error. Please reload and try again.");
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit";
+        }
+      } else {
+        confirmationResult.confirm(otpInput.value).then(() => {
+          authConfirmed.style.display = "block";
+          donationForm.style.display = "none";
+          donationOptions.style.display = "block";
+
+         // ✅ Send to Make.com webhook with full donor data
+        fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          timestamp: new Date().toISOString(),
+          name: document.getElementById("name").value,
+          phone: document.getElementById("mobile").value,
+          email: document.getElementById("email").value,
+          amount: document.getElementById("amount").value,
+          message: document.getElementById("message").value,
+          address: document.getElementById("address").value,
+          anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
+          receipt: document.getElementById("receipt").checked ? "Yes" : "No",
+          status: "Verified",
+          verified: "Yes"
+        })
+      })
+      .then(() => console.log("✅ Sent to Make.com"))
+      .catch(err => console.error("❌ Make error:", err));
+
+      }).catch(err => {
+        otpFeedback.textContent = "Wrong OTP";
+        otpFeedback.style.color = "red";
+      });
+      }
+    });
   </script>
 </body>
 </html>
