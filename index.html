@@ -121,7 +121,7 @@
       <div class="form-check mb-2">
         <input class="form-check-input" type="checkbox" id="declaration" required>
         <label class="form-check-label" for="declaration">
-          I hereby declare I am an Indian citizen...
+          I hereby declare I am an Indian citizen
           <span id="more" style="display: none;"> donating my own funds. I consent to contact via WhatsApp/email/SMS for donation updates, receipts, or campaigns.</span>
           <button type="button" id="readToggle" class="btn btn-link p-0" style="font-size: 13px;" onclick="toggleReadMore()">Read More</button>
         </label>
@@ -179,7 +179,7 @@
         </div>
       </div>
       <p class="text-muted small mt-3">
-        Maaya Anubhuti Foundation is a registered Section 8 Non-profit organisation (License No. 169918, CIN: U86900UP2025NPL226294, PAN: AATCM5136F).
+        Maaya Anubhuti Foundation, a registered Section 8 Non-profit organisation (License No. 169918, CIN: U86900UP2025NPL226294, PAN: AATCM5136F), operates with a commitment to transparency and integrity. None of the members of our NGO receive salaries or any monetary benefits from the organization's funds.
       </p>
     </div>
   </div>
@@ -241,49 +241,53 @@
       if (!confirmationResult) {
         submitBtn.disabled = true;
         submitBtn.textContent = "Sending OTP...";
-        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('submitBtn', { size: 'invisible' });
-        window.recaptchaVerifier.verify().then(() => {
-          return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
-        }).then(result => {
-          confirmationResult = result;
-          otpSection.classList.remove("d-none");
-          otpInput.focus();
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Submit OTP for Donation";
-        }).catch(err => {
-          alert("Error sending OTP: " + err.message);
+        try {
+          window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('submitBtn', { size: 'invisible' });
+          window.recaptchaVerifier.verify().then(() => {
+            return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
+          }).then(result => {
+            confirmationResult = result;
+            otpSection.classList.remove("d-none");
+            otpInput.focus();
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit OTP for Donation";
+          }).catch(err => {
+            alert("Error sending OTP: " + err.message);
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit";
+          });
+        } catch (e) {
+          alert("ReCAPTCHA error. Please reload and try again.");
           submitBtn.disabled = false;
           submitBtn.textContent = "Submit";
-        });
+        }
       } else {
-   confirmationResult.confirm(otpInput.value).then(() => {
-     // Show confirmation UI
-     authConfirmed.style.display = "block";
-     donationForm.style.display = "none";
-     donationOptions.style.display = "block";
+        confirmationResult.confirm(otpInput.value).then(() => {
+          authConfirmed.style.display = "block";
+          donationForm.style.display = "none";
+          donationOptions.style.display = "block";
 
-     // ✅ POST to Google Sheet after successful OTP
-     fetch("https://script.google.com/macros/s/AKfycbzkQ2yaa-yHOkOHhlPjoC1GdvSf8UBwvQ29Gcxmvcp5IvzTHugJg764OdSOjZr_wew/exec", {
-       method: "POST",
-       body: JSON.stringify({
-         name: document.getElementById("name").value,
-         phone: document.getElementById("mobile").value,
-         email: document.getElementById("email").value,
-         amount: document.getElementById("amount").value,
-         message: document.getElementById("message").value,
-         address: document.getElementById("address").value,
-         anonymous: document.getElementById("anonymous").checked
-       }),
-       headers: {
-         "Content-Type": "application/json"
-       }
-     }).then(res => console.log("Submitted to Google Sheet"))
-       .catch(err => console.error("Sheet error:", err));
+          // ✅ Send to Make.com webhook
+          fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: document.getElementById("name").value,
+              phone: document.getElementById("mobile").value,
+              email: document.getElementById("email").value,
+              amount: document.getElementById("amount").value,
+              message: document.getElementById("message").value,
+              address: document.getElementById("address").value,
+              anonymous: document.getElementById("anonymous").checked,
+              receipt: document.getElementById("receipt").checked
+            })
+          }).then(() => console.log("✅ Sent to Make.com"))
+            .catch(err => console.error("❌ Make error:", err));
 
-   }).catch(err => {
-     otpFeedback.textContent = "Wrong OTP";
-     otpFeedback.style.color = "red";
-   });
+        }).catch(err => {
+          otpFeedback.textContent = "Wrong OTP";
+          otpFeedback.style.color = "red";
+        });
       }
     });
   </script>
