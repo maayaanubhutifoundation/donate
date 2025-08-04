@@ -226,55 +226,68 @@
     });
 
     submitBtn.addEventListener("click", () => {
-      const mobileValue = document.getElementById("mobile").value;
-      const amount = parseInt(document.getElementById("amount").value);
+  const mobileValue = document.getElementById("mobile").value;
+  const amount = parseInt(document.getElementById("amount").value);
 
-      if (!/^([6-9])\d{9}$/.test(mobileValue)) {
-        alert("Please enter a valid 10-digit mobile number starting with 6–9.");
-        return;
-      }
-      if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
-      if (isNaN(amount) || amount < 50) return alert("Minimum ₹50 donation required.");
+  if (!/^([6-9])\d{9}$/.test(mobileValue)) {
+    alert("Please enter a valid 10-digit mobile number starting with 6–9.");
+    return;
+  }
+  if (!document.getElementById("declaration").checked) {
+    alert("Please accept the declaration.");
+    return;
+  }
+  if (isNaN(amount) || amount < 50) {
+    alert("Minimum ₹50 donation required.");
+    return;
+  }
 
-      const phone = "+91" + mobileValue;
+  const phone = "+91" + mobileValue;
 
-      if (!confirmationResult) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Sending OTP...";
-        try {
-          window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('submitBtn', { size: 'invisible' });
-          window.recaptchaVerifier.verify().then(() => {
-            return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
-          }).then(result => {
-            confirmationResult = result;
-            otpSection.classList.remove("d-none");
-            otpInput.focus();
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Submit OTP for Donation";
-          }).catch(err => {
-            alert("Error sending OTP: " + err.message);
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Submit";
-          });
-        } catch (e) {
-          alert("ReCAPTCHA error. Please reload and try again.");
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Submit";
-        }
-      } else {
-        confirmationResult.confirm(otpInput.value).then(() => {
-          authConfirmed.style.display = "block";
-          donationForm.style.display = "none";
-          donationOptions.style.display = "block";
+  if (!confirmationResult) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Sending OTP...";
 
-         // ✅ Send to Make.com webhook with full donor data
-        fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
+    try {
+      // ✅ Attach recaptchaVerifier to hidden container (not the button itself)
+      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", {
+        size: "invisible"
+      });
+
+      recaptchaVerifier.verify().then(() => {
+        return firebase.auth().signInWithPhoneNumber(phone, recaptchaVerifier);
+      }).then(result => {
+        confirmationResult = result;
+        otpSection.classList.remove("d-none");
+        otpInput.focus();
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit OTP for Donation";
+      }).catch(err => {
+        alert("Error sending OTP: " + err.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit";
+      });
+
+    } catch (e) {
+      alert("ReCAPTCHA error. Please reload and try again.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit";
+    }
+
+  } else {
+    confirmationResult.confirm(otpInput.value).then(() => {
+      authConfirmed.style.display = "block";
+      donationForm.style.display = "none";
+      donationOptions.style.display = "block";
+
+      // ✅ Send to Make.com webhook
+      fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           timestamp: new Date().toISOString(),
           name: document.getElementById("name").value,
-          phone: document.getElementById("mobile").value,
+          phone: mobileValue,
           email: document.getElementById("email").value,
           amount: document.getElementById("amount").value,
           message: document.getElementById("message").value,
@@ -288,12 +301,12 @@
       .then(() => console.log("✅ Sent to Make.com"))
       .catch(err => console.error("❌ Make error:", err));
 
-      }).catch(err => {
-        otpFeedback.textContent = "Wrong OTP";
-        otpFeedback.style.color = "red";
-      });
-      }
+    }).catch(err => {
+      otpFeedback.textContent = "Wrong OTP";
+      otpFeedback.style.color = "red";
     });
+  }
+});
   </script>
 </body>
 </html>
