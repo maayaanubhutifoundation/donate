@@ -77,17 +77,6 @@
       padding: 15px;
       border-radius: 8px;
     }
-.doc-img {
-  width: 100%;
-  max-height: 220px;
-  object-fit: cover;
-  transition: transform 0.2s ease-in-out;
-  cursor: pointer;
-}
-
-.doc-img:hover {
-  transform: scale(1.05);
-}
   </style>
 </head>
 <body>
@@ -116,6 +105,10 @@
       <div class="mb-3">
         <label class="form-label">Email (Optional)</label>
         <input type="email" class="form-control" id="email">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Amount Donated* (Min ₹50)</label>
+        <input type="number" class="form-control" id="amount" min="50" required>
       </div>
       <div class="mb-3">
         <label class="form-label">Address (Optional)</label>
@@ -188,36 +181,8 @@
       <p class="text-muted small mt-3">
         Maaya Anubhuti Foundation, a registered Section 8 Non-profit organisation (License No. 169918, CIN: U86900UP2025NPL226294, PAN: AATCM5136F), operates with a commitment to transparency and integrity. None of the members of our NGO receive salaries or any monetary benefits from the organization's funds.
       </p>
-<!-- Document References -->
-<div class="mt-4">
-  <h5 class="text-center mb-3">📄 Legal Documents of the Foundation</h5>
-  <div class="row justify-content-center g-4">
-    <div class="col-12 col-sm-6 col-md-3 text-center">
-      <h6 class="small">INC-13: Memorandum</h6>
-      <a href="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/inc_13_e_memorandum_of_association-.pdf-A1a5v8XW9kF9Qrg0.jpeg" target="_blank">
-        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/inc_13_e_memorandum_of_association-.pdf-A1a5v8XW9kF9Qrg0.jpeg" class="img-thumbnail doc-img" alt="INC-13">
-      </a>
-    </div>
-    <div class="col-12 col-sm-6 col-md-3 text-center">
-      <h6 class="small">Certificate of Incorporation</h6>
-      <a href="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/incorporation-mP4M8qLav5C2lL81.jpeg" target="_blank">
-        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/incorporation-mP4M8qLav5C2lL81.jpeg" class="img-thumbnail doc-img" alt="COI">
-      </a>
-    </div>
-    <div class="col-12 col-sm-6 col-md-3 text-center">
-      <h6 class="small">Section 8 License</h6>
-      <a href="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/section8-mjEGXMDl4wHVV7BG.jpeg" target="_blank">
-        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/section8-mjEGXMDl4wHVV7BG.jpeg" class="img-thumbnail doc-img" alt="Section 8">
-      </a>
-    </div>
-    <div class="col-12 col-sm-6 col-md-3 text-center">
-      <h6 class="small">DARPAN Registration</h6>
-      <a href="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/darpan-mjEGXMDlv0FpRDZ2.jpeg" target="_blank">
-        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/darpan-mjEGXMDlv0FpRDZ2.jpeg" class="img-thumbnail doc-img" alt="DARPAN">
-      </a>
     </div>
   </div>
-</div>
 
   <!-- Hidden Firebase Recaptcha Container -->
   <div id="recaptcha-container" style="display: none;"></div>
@@ -265,12 +230,14 @@
 
     submitBtn.addEventListener("click", () => {
       const mobileValue = document.getElementById("mobile").value;
+      const amount = parseInt(document.getElementById("amount").value);
 
       if (!/^([6-9])\d{9}$/.test(mobileValue)) {
         alert("Please enter a valid 10-digit mobile number starting with 6–9.");
         return;
       }
       if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
+      if (isNaN(amount) || amount < 50) return alert("Minimum ₹50 donation required.");
 
       const phone = "+91" + mobileValue;
 
@@ -311,6 +278,7 @@
               name: document.getElementById("name").value,
               phone: document.getElementById("mobile").value,
               email: document.getElementById("email").value,
+              amount: document.getElementById("amount").value,
               message: document.getElementById("message").value,
               address: document.getElementById("address").value,
               anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
@@ -330,4 +298,3 @@
   </script>
 </body>
 </html>
-
