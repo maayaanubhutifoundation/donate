@@ -77,6 +77,17 @@
       padding: 15px;
       border-radius: 8px;
     }
+.doc-img {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  transition: transform 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.doc-img:hover {
+  transform: scale(1.05);
+}
   </style>
 </head>
 <body>
@@ -180,34 +191,34 @@
 <!-- Document References -->
 <div class="mt-4">
   <h5 class="text-center mb-3">📄 Legal Documents of the Foundation</h5>
-  <div class="row g-3">
-    <div class="col-6 col-md-3 text-center">
+  <div class="row justify-content-center g-4">
+    <div class="col-12 col-sm-6 col-md-3 text-center">
       <h6 class="small">INC-13: Memorandum</h6>
-      <a href="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/inc_13_e_memorandum_of_association-.pdf-A1a5v8XW9kF9Qrg0.jpeg" target="_blank">
-        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/inc_13_e_memorandum_of_association-.pdf-A1a5v8XW9kF9Qrg0.jpeg" class="img-fluid rounded shadow-sm" alt="INC-13" style="cursor: pointer;">
+      <a href="https://assets.zyrosite.com/.../inc_13_e_memorandum_of_association-.pdf-A1a5v8XW9kF9Qrg0.jpeg" target="_blank">
+        <img src="https://assets.zyrosite.com/.../inc_13_e_memorandum_of_association-.pdf-A1a5v8XW9kF9Qrg0.jpeg" class="img-thumbnail doc-img" alt="INC-13">
       </a>
     </div>
-    <div class="col-6 col-md-3 text-center">
+    <div class="col-12 col-sm-6 col-md-3 text-center">
       <h6 class="small">Certificate of Incorporation</h6>
-      <a href="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/incorporation-mP4M8qLav5C2lL81.jpeg" target="_blank">
-        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/incorporation-mP4M8qLav5C2lL81.jpeg" class="img-fluid rounded shadow-sm" alt="COI" style="cursor: pointer;">
+      <a href="https://assets.zyrosite.com/.../incorporation-mP4M8qLav5C2lL81.jpeg" target="_blank">
+        <img src="https://assets.zyrosite.com/.../incorporation-mP4M8qLav5C2lL81.jpeg" class="img-thumbnail doc-img" alt="COI">
       </a>
     </div>
-    <div class="col-6 col-md-3 text-center">
+    <div class="col-12 col-sm-6 col-md-3 text-center">
       <h6 class="small">Section 8 License</h6>
-      <a href="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/section8-mjEGXMDl4wHVV7BG.jpeg" target="_blank">
-        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/section8-mjEGXMDl4wHVV7BG.jpeg" class="img-fluid rounded shadow-sm" alt="Section 8" style="cursor: pointer;">
+      <a href="https://assets.zyrosite.com/.../section8-mjEGXMDl4wHVV7BG.jpeg" target="_blank">
+        <img src="https://assets.zyrosite.com/.../section8-mjEGXMDl4wHVV7BG.jpeg" class="img-thumbnail doc-img" alt="Section 8 License">
       </a>
     </div>
-    <div class="col-6 col-md-3 text-center">
+    <div class="col-12 col-sm-6 col-md-3 text-center">
       <h6 class="small">DARPAN Registration</h6>
-      <a href="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/darpan-mjEGXMDlv0FpRDZ2.jpeg" target="_blank">
-        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=512,fit=crop/A0xj3j1bO7C10DBz/darpan-mjEGXMDlv0FpRDZ2.jpeg" class="img-fluid rounded shadow-sm" alt="DARPAN" style="cursor: pointer;">
+      <a href="https://assets.zyrosite.com/.../darpan-mjEGXMDlv0FpRDZ2.jpeg" target="_blank">
+        <img src="https://assets.zyrosite.com/.../darpan-mjEGXMDlv0FpRDZ2.jpeg" class="img-thumbnail doc-img" alt="DARPAN">
       </a>
     </div>
   </div>
 </div>
-    
+
   <!-- Hidden Firebase Recaptcha Container -->
   <div id="recaptcha-container" style="display: none;"></div>
 
@@ -319,3 +330,4 @@
   </script>
 </body>
 </html>
+
