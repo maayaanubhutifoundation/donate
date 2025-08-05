@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -77,14 +78,31 @@
       padding: 15px;
       border-radius: 8px;
     }
+    .quote-line {
+      font-style: italic;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Support Maaya Anubhuti Foundation 💛</h1>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h1 class="m-0">Support Maaya Anubhuti Foundation 💛</h1>
+      <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,h=429,fit=crop/A0xj3j1bO7C10DBz/logo_maf-Awv9zveMloUr16Ba.jpeg" alt="Logo" style="height: 70px; border-radius: 8px;">
+    </div>
+
     <p class="lead">
       Your generous donation helps us care for the elderly, build a compassionate environment, and train youth to serve with dignity. Join us in bringing hope and care to those who need it most.
     </p>
+
+    <div class="mb-4">
+      <div class="quote-line text-start">“It's not how much we give but how much love we put into giving.” — <strong>Mother Teresa</strong></div>
+      <div class="quote-line text-start">“No one has ever become poor by giving.” — <strong>Anne Frank</strong></div>
+      <div class="quote-line text-start">“The best way to find yourself is to lose yourself in the service of others.” — <strong>Mahatma Gandhi</strong></div>
+      <div class="quote-line text-start">“We make a living by what we get, but we make a life by what we give.” — <strong>Winston Churchill</strong></div>
+    </div>
 
     <form id="donationForm">
       <div class="mb-3">
@@ -117,14 +135,12 @@
       <div class="form-check mb-2">
         <input class="form-check-input" type="checkbox" id="declaration" required>
         <label class="form-check-label" for="declaration">
-          I hereby declare I am an Indian citizen
-          <span id="more" style="display: none;"> donating my own funds. I consent to contact via WhatsApp/email/SMS for donation updates, receipts, or campaigns.</span>
-          <button type="button" id="readToggle" class="btn btn-link p-0" style="font-size: 13px;" onclick="toggleReadMore()">Read More</button>
+          I hereby declare I am an Indian citizen donating my own funds. <span id="more" style="display: none;">I consent to contact via WhatsApp/email/SMS for donation updates, receipts, or campaigns.</span> <button type="button" id="readToggle" class="btn btn-link p-0" style="font-size: 13px;" onclick="toggleReadMore()">Read More</button>
         </label>
       </div>
       <div class="form-check mb-2">
         <input class="form-check-input" type="checkbox" id="anonymous">
-        <label class="form-check-label" for="anonymous">I opt to keep my name anonymous.</label>
+        <label class="form-check-label" for="anonymous">I opt to remain anonymous and not have my name published on the website.</label>
       </div>
       <div class="form-check mb-3">
         <input class="form-check-input" type="checkbox" id="receipt">
@@ -154,7 +170,7 @@
               <div style="font-size: 30px;">🔢</div>
               <h6 class="card-title mt-2">UPI ID</h6>
               <p id="upiText">9599914274@idbi</p>
-              <button onclick="copyText('upiText')" class="btn btn-sm btn-outline-primary">Copy UPI ID</button>
+              <button onclick="navigator.clipboard.writeText('9599914274@idbi')" class="btn btn-sm btn-outline-primary">Copy UPI ID</button>
             </div>
           </div>
         </div>
@@ -169,125 +185,40 @@
                 Bank: IDBI Bank<br>
                 Branch: Indirapuram, Ghaziabad
               </small><br>
-              <button onclick="copyText('accNo')" class="btn btn-sm btn-outline-primary mt-2">Copy Account No</button>
+              <button onclick="navigator.clipboard.writeText('0873102000012698')" class="btn btn-sm btn-outline-primary mt-2">Copy Account No</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-body text-center">
+              <div style="font-size: 30px;">✉️</div>
+              <h6 class="card-title mt-2">Cheque / DD</h6>
+              <p class="small m-0">
+                Please send your Cheque or Demand Draft in favour of:<br>
+                <strong>Maaya Anubhuti Foundation</strong><br>
+                Address: 3A-232, Rachna, Vaishali, Ghaziabad, UP-201010
+              </p>
             </div>
           </div>
         </div>
       </div>
-      <p class="text-muted small mt-3">
-        Maaya Anubhuti Foundation, a registered Section 8 Non-profit organisation (License No. 169918, CIN: U86900UP2025NPL226294, PAN: AATCM5136F), operates with a commitment to transparency and integrity. None of the members of our NGO receive salaries or any monetary benefits from the organization's funds.
-      </p>
     </div>
   </div>
 
-  <!-- Hidden Firebase Recaptcha Container -->
-  <div id="recaptcha-container" style="display: none;"></div>
-
-  <script>
-    function toggleReadMore() {
-      const moreText = document.getElementById("more");
-      const btn = document.getElementById("readToggle");
-      if (moreText.style.display === "none") {
-        moreText.style.display = "inline";
-        btn.textContent = "Read Less";
-      } else {
-        moreText.style.display = "none";
-        btn.textContent = "Read More";
-      }
+<script>
+  function toggleReadMore() {
+    const moreText = document.getElementById("more");
+    const btn = document.getElementById("readToggle");
+    if (moreText.style.display === "none") {
+      moreText.style.display = "inline";
+      btn.textContent = "Read Less";
+    } else {
+      moreText.style.display = "none";
+      btn.textContent = "Read More";
     }
-
-    function copyText(id) {
-      const text = document.getElementById(id).innerText;
-      navigator.clipboard.writeText(text).then(() => alert("Copied: " + text));
-    }
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAG6BcfLCiBG4nX2dqa0YDCqtbgiET4qQg",
-      authDomain: "maaya-donation-project.firebaseapp.com",
-      projectId: "maaya-donation-project",
-      storageBucket: "maaya-donation-project.appspot.com",
-      messagingSenderId: "893542409484",
-      appId: "1:893542409484:web:6ce0ff5bc7e51de69f1529"
-    };
-    firebase.initializeApp(firebaseConfig);
-
-    let confirmationResult;
-    const submitBtn = document.getElementById("submitBtn");
-    const otpSection = document.getElementById("otpSection");
-    const otpInput = document.getElementById("otp");
-    const otpFeedback = document.getElementById("otpFeedback");
-    const authConfirmed = document.getElementById("authConfirmed");
-    const donationForm = document.getElementById("donationForm");
-    const donationOptions = document.getElementById("donationOptions");
-
-    otpInput.addEventListener("input", () => {
-      if (otpInput.value.length === 6 && confirmationResult) submitBtn.click();
-    });
-
-    submitBtn.addEventListener("click", () => {
-      const mobileValue = document.getElementById("mobile").value;
-
-      if (!/^([6-9])\d{9}$/.test(mobileValue)) {
-        alert("Please enter a valid 10-digit mobile number starting with 6–9.");
-        return;
-      }
-      if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
-
-      const phone = "+91" + mobileValue;
-
-      if (!confirmationResult) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Sending OTP...";
-        try {
-          window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
-          window.recaptchaVerifier.verify().then(() => {
-            return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
-          }).then(result => {
-            confirmationResult = result;
-            otpSection.classList.remove("d-none");
-            otpInput.focus();
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Submit OTP for Donation";
-          }).catch(err => {
-            alert("Error sending OTP: " + err.message);
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Submit";
-          });
-        } catch (e) {
-          alert("Unexpected error. Please reload and try again.");
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Submit";
-        }
-      } else {
-        confirmationResult.confirm(otpInput.value).then(() => {
-          authConfirmed.style.display = "block";
-          donationForm.style.display = "none";
-          donationOptions.style.display = "block";
-
-          fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              timestamp: new Date().toISOString(),
-              name: document.getElementById("name").value,
-              phone: document.getElementById("mobile").value,
-              email: document.getElementById("email").value,
-              message: document.getElementById("message").value,
-              address: document.getElementById("address").value,
-              anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
-              receipt: document.getElementById("receipt").checked ? "Yes" : "No",
-              status: "Verified",
-              verified: "Yes"
-            })
-          }).then(() => console.log("✅ Sent to Make.com"))
-            .catch(err => console.error("❌ Make error:", err));
-
-        }).catch(err => {
-          otpFeedback.textContent = "Wrong OTP";
-          otpFeedback.style.color = "red";
-        });
-      }
-    });
-  </script>
+  }
+</script>
 </body>
+
 </html>
