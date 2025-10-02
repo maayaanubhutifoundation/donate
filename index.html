@@ -137,11 +137,13 @@
         <label class="form-label">Email (Optional)</label>
         <input type="email" class="form-control" id="email">
       </div>
-      <input type="text" class="form-control" id="pan"
-       style="text-transform: uppercase;"
-       maxlength="10" required
-       pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
-       title="PAN format: 5 letters, 4 digits, 1 letter (e.g., AEZPB3382G)">
+      <div class="mb-3">
+        <label class="form-label">PAN (Required to claim 50% tax deduction under 80G)</label>
+        <input type="text" class="form-control" id="pan"
+         style="text-transform: uppercase;"
+         maxlength="10" required
+         pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+         title="PAN format: 5 letters, 4 digits, 1 letter (e.g., AEZPB3382G)">
       <div class="mb-3">
         <label class="form-label">Address (Required to claim 50% tax deduction under 80G)</label>
         <input type="text" class="form-control" id="address">
