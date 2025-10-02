@@ -138,6 +138,10 @@
         <input type="email" class="form-control" id="email">
       </div>
       <div class="mb-3">
+        <label class="form-label">PAN (Optional)</label>
+        <input type="text" class="form-control" id="pan">
+      </div>
+      <div class="mb-3">
         <label class="form-label">Address (Optional)</label>
         <input type="text" class="form-control" id="address">
       </div>
@@ -322,6 +326,7 @@
               name: document.getElementById("name").value,
               phone: document.getElementById("mobile").value,
               email: document.getElementById("email").value,
+              pan: document.getElementById("pan").value,
               message: document.getElementById("message").value,
               address: document.getElementById("address").value,
               anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
