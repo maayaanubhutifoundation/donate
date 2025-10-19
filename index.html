@@ -27,12 +27,12 @@
     #donationOptions { display:none; margin-top:20px; }
     #otpSection { margin-bottom:15px; background:#eef5ff; padding:15px; border-radius:8px; }
 
-    /* === Highlight consent checkboxes === */
+    /* Consent checkboxes */
     .form-check-input { border:2px solid #007bff !important; box-shadow:none !important; }
     .form-check-input:checked { background-color:#007bff !important; border-color:#007bff !important; }
     .form-check-label { color:#004085 !important; font-weight:500; }
 
-    /* [BORDER] Highlight input boxes */
+    /* Inputs */
     .form-control, .form-select {
       border:2px solid #7846e4 !important;
       border-radius:12px !important;
@@ -44,7 +44,7 @@
       outline:none;
     }
 
-    /* [BORDER] Section wrapper (from Name down to Message) */
+    /* Section wrapper */
     .field-section {
       border:3px solid #7846e4;
       border-radius:14px;
@@ -54,7 +54,7 @@
       box-shadow: 0 8px 20px rgba(17,24,39,.06);
     }
 
-    /* [80G] start hidden until user selects "Yes" */
+    /* 80G fields hidden until Yes */
     #panWrap, #addrWrap { display:none; }
   </style>
 </head>
@@ -80,11 +80,10 @@
       <p><strong>“We make a living by what we get, but we make a life by what we give.”</strong> – Winston Churchill</p>
     </div>
 
-    <form id="donationForm">
-      <!-- [BORDER] Start bordered section (from Name down to Message) -->
+    <form id="donationForm" novalidate>
       <div class="field-section">
         <div class="mb-3">
-          <label class="form-label">Full Name*</label>
+          <label id="nameLabel" class="form-label">Full Name*</label>
           <input type="text" class="form-control" id="name" required>
         </div>
 
@@ -106,31 +105,34 @@
           <input type="email" class="form-control" id="email">
         </div>
 
-        <!-- [80G] Toggle radios -->
+        <!-- 80G Toggle (Default = No) -->
         <div class="mb-3">
           <label class="form-label d-block mb-1">Require 80G Tax Exemption Certificate?</label>
           <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="need80g" id="need80gYes" value="yes" checked>
+            <input class="form-check-input" type="radio" name="need80g" id="need80gYes" value="yes">
             <label class="form-check-label" for="need80gYes">Yes</label>
           </div>
           <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="need80g" id="need80gNo" value="no">
+            <input class="form-check-input" type="radio" name="need80g" id="need80gNo" value="no" checked>
             <label class="form-check-label" for="need80gNo">No</label>
           </div>
         </div>
 
-        <!-- [80G] Conditional fields -->
+        <!-- 80G Conditional fields -->
         <div class="mb-3" id="panWrap">
-          <label class="form-label">PAN (Required for 80G receipt)</label>
+          <label class="form-label" for="pan">PAN*</label>
           <input type="text" class="form-control" id="pan"
                  style="text-transform:uppercase;"
                  maxlength="10"
-                 pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
-                 title="PAN format: 5 letters, 4 digits, 1 letter (e.g., AEZPB3382G)">
+                 pattern="^[A-Z]{5}[0-9]{4}[A-Z]$"
+                 autocomplete="off"
+                 inputmode="latin"
+                 title="Format: 5 letters + 4 digits + 1 letter (e.g., ABCDE1234F)">
+          <div class="form-text" id="panHint"></div>
         </div>
 
         <div class="mb-3" id="addrWrap">
-          <label class="form-label">Address (Required for 80G receipt)</label>
+          <label class="form-label" for="address">Address*</label>
           <input type="text" class="form-control" id="address">
         </div>
 
@@ -139,7 +141,6 @@
           <textarea class="form-control" id="message" rows="2"></textarea>
         </div>
       </div>
-      <!-- [BORDER] End bordered section -->
 
       <div style="color:#7846e4; font-size:.9rem; font-weight:500; border-left:4px solid #007bff; padding-left:10px; margin-bottom:12px;">
         You are requested to authenticate your mobile number by pressing the <strong>Submit</strong> button before the QR code, UPI ID, and Bank details become visible to you for donation.
@@ -279,39 +280,127 @@
     const donationForm = document.getElementById("donationForm");
     const donationOptions = document.getElementById("donationOptions");
 
-    // [80G] toggle logic
-    const need80gYes=document.getElementById('need80gYes');
-    const need80gNo=document.getElementById('need80gNo');
-    const panWrap=document.getElementById('panWrap');
-    const addrWrap=document.getElementById('addrWrap');
-    const panInput=document.getElementById('pan');
-    const addrInput=document.getElementById('address');
+    // [80G] toggle logic (Default = No)
+    const need80gYes = document.getElementById('need80gYes');
+    const need80gNo  = document.getElementById('need80gNo');
+    const panWrap    = document.getElementById('panWrap');
+    const addrWrap   = document.getElementById('addrWrap');
+    const panInput   = document.getElementById('pan');
+    const addrInput  = document.getElementById('address');
+    const nameInput  = document.getElementById('name');
+    const nameLabel  = document.getElementById('nameLabel');
+    const panHint    = document.getElementById('panHint');
 
-    function need80gValue(){ const r=document.querySelector('input[name="need80g"]:checked'); return r?r.value:'yes'; }
+    function need80gValue(){ const r=document.querySelector('input[name="need80g"]:checked'); return r?r.value:'no'; }
+
     function toggle80G(){
       const need=(need80gValue()==='yes');
       panWrap.style.display=need?'block':'none';
       addrWrap.style.display=need?'block':'none';
       panInput.required=need; addrInput.required=need;
-      if(!need){ panInput.value=''; addrInput.value=''; }
+      nameLabel.textContent = need ? 'Name as per PAN*' : 'Full Name*';
+      if(!need){
+        panInput.value=''; addrInput.value='';
+        panInput.setCustomValidity(''); panHint.textContent='';
+      }
     }
     need80gYes.addEventListener('change',toggle80G);
     need80gNo.addEventListener('change',toggle80G);
-    toggle80G(); // init
+    toggle80G(); // init with No
 
+    // PAN validation: format + 5th-letter vs name rule
+    const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+
+    function getPanTypeChar(pan){ return pan?.toUpperCase().charAt(3) || ''; } // 4th char
+    function getFifthChar(pan){ return pan?.toUpperCase().charAt(4) || ''; }    // 5th char
+    function getSurnameInitial(name){
+      const parts = (name||'').trim().split(/\s+/);
+      const last = parts[parts.length-1] || '';
+      const letter = (last.match(/[A-Za-z]/)?.[0]||'').toUpperCase();
+      return letter;
+    }
+    function getEntityInitial(name){
+      const letter = ((name||'').trim().match(/[A-Za-z]/)||[''])[0].toUpperCase();
+      return letter;
+    }
+
+    function explainType(t){
+      switch(t){
+        case 'P': return 'Individual';
+        case 'C': return 'Company';
+        case 'H': return 'HUF';
+        case 'F': return 'Firm/LLP';
+        case 'A': return 'AOP';
+        case 'B': return 'BOI';
+        case 'T': return 'Trust';
+        case 'L': return 'Local Authority';
+        case 'J': return 'Artificial Juridical Person';
+        case 'G': return 'Government';
+        default: return '';
+      }
+    }
+
+    function validatePAN(){
+      if(need80gValue()!=='yes'){ panInput.setCustomValidity(''); panHint.textContent=''; return; }
+
+      const pan = panInput.value.toUpperCase();
+      const name = nameInput.value;
+
+      if(!PAN_REGEX.test(pan)){
+        panInput.setCustomValidity('Invalid PAN format. Example: ABCDE1234F');
+        panHint.textContent = 'Format must be 5 letters + 4 digits + 1 letter (e.g., ABCDE1234F).';
+        return;
+      }
+
+      const typeChar  = getPanTypeChar(pan); // 4th
+      const fifthChar = getFifthChar(pan);
+
+      // Compute expected initial from name based on type
+      let expectedInitial = '';
+      if(typeChar === 'P'){ // Individual
+        expectedInitial = getSurnameInitial(name);
+      }else{ // Non-individual
+        expectedInitial = getEntityInitial(name);
+      }
+
+      if(!expectedInitial){
+        panInput.setCustomValidity('Enter the '+(typeChar==='P'?'surname (last word)':'entity name')+' so its initial matches PAN 5th letter.');
+        panHint.textContent = 'PAN Type: '+typeChar+' ('+explainType(typeChar)+'). The 5th PAN letter "'+fifthChar+'" must match '+(typeChar==='P'?'Surname initial':'Entity initial')+'.';
+        return;
+      }
+
+      if(fifthChar !== expectedInitial){
+        panInput.setCustomValidity('Name mismatch: PAN 5th letter "'+fifthChar+'" should match '+(typeChar==='P'?'Surname':'Entity')+' initial "'+expectedInitial+'".');
+        panHint.textContent = 'PAN Type: '+typeChar+' ('+explainType(typeChar)+'). Expected initial "'+expectedInitial+'", got "'+fifthChar+'".';
+        return;
+      }
+
+      // All good
+      panInput.setCustomValidity('');
+      panHint.textContent = 'PAN Type: '+typeChar+' ('+explainType(typeChar)+'). Name initial matches.';
+    }
+
+    panInput.addEventListener('input', ()=>{ panInput.value = panInput.value.toUpperCase(); validatePAN(); });
+    nameInput.addEventListener('input', validatePAN);
+
+    // OTP auto-submit
     otpInput.addEventListener("input", () => {
       if (otpInput.value.length === 6 && confirmationResult) submitBtn.click();
     });
 
+    // Submit/OTP flow (unchanged except adding two optional fields to payload)
     submitBtn.addEventListener("click", () => {
       const mobileValue = document.getElementById("mobile").value;
       if (!/^([6-9])\d{9}$/.test(mobileValue)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
       if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
 
-      // [80G] conditional validation
+      // 80G conditional validation
       if(need80gValue()==='yes'){
-        const panVal=panInput.value.trim().toUpperCase();
-        if(!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panVal)) return alert("Enter a valid PAN (e.g., ABCDE1234F).");
+        validatePAN();
+        if(panInput.validationMessage){
+          alert(panInput.validationMessage);
+          return;
+        }
         if(!addrInput.value.trim()) return alert("Address is required for 80G receipt.");
       }
 
@@ -346,8 +435,13 @@
           donationForm.style.display = "none";
           donationOptions.style.display = "block";
 
-          // [80G] send blanks when 80G = No (no schema change)
           const wants80g = (need80gValue()==='yes');
+          const panVal   = wants80g ? (panInput.value || "").toUpperCase() : "";
+          const panType  = panVal ? getPanTypeChar(panVal) : "";     // Optional: for Sheet
+          const nameInit = nameInput.value ? ( (panType==='P') ? getSurnameInitial(nameInput.value) : getEntityInitial(nameInput.value) ) : "";
+          const pan5th   = panVal ? getFifthChar(panVal) : "";
+          const panNameMatch = (panVal && nameInit) ? (pan5th===nameInit) : "";
+
           fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -356,13 +450,16 @@
               name: document.getElementById("name").value,
               phone: document.getElementById("mobile").value,
               email: document.getElementById("email").value,
-              pan: wants80g ? (document.getElementById("pan").value || "").toUpperCase() : "",
-              message: document.getElementById("message").value,
+              pan: panVal,
               address: wants80g ? document.getElementById("address").value : "",
+              message: document.getElementById("message").value,
               anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
               receipt: document.getElementById("receipt").checked ? "Yes" : "No",
               status: "Verified",
-              verified: "Yes"
+              verified: "Yes",
+              // Optional convenience fields for your Sheet (map if you add the columns):
+              panType: panType,                  // -> PAN_Type (one-letter code)
+              panNameMatch: String(panNameMatch) // -> PAN_NameMatch (TRUE/FALSE)
             })
           }).then(() => console.log("✅ Sent to Make.com"))
             .catch(err => console.error("❌ Make error:", err));
