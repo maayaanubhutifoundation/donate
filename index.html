@@ -388,7 +388,7 @@
       if (otpInput.value.length === 6 && confirmationResult) submitBtn.click();
     });
 
-    // Submit/OTP flow (unchanged except adding two optional fields to payload)
+    // Submit/OTP flow (unchanged except we’ll send panType only)
     submitBtn.addEventListener("click", () => {
       const mobileValue = document.getElementById("mobile").value;
       if (!/^([6-9])\d{9}$/.test(mobileValue)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
@@ -437,10 +437,7 @@
 
           const wants80g = (need80gValue()==='yes');
           const panVal   = wants80g ? (panInput.value || "").toUpperCase() : "";
-          const panType  = panVal ? getPanTypeChar(panVal) : "";     // Optional: for Sheet
-          const nameInit = nameInput.value ? ( (panType==='P') ? getSurnameInitial(nameInput.value) : getEntityInitial(nameInput.value) ) : "";
-          const pan5th   = panVal ? getFifthChar(panVal) : "";
-          const panNameMatch = (panVal && nameInit) ? (pan5th===nameInit) : "";
+          const panType  = panVal ? getPanTypeChar(panVal) : ""; // one-letter P/C/H/F/A/B/T/L/J/G
 
           fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
             method: "POST",
@@ -451,15 +448,13 @@
               phone: document.getElementById("mobile").value,
               email: document.getElementById("email").value,
               pan: panVal,
+              panType: panType,                  // <-- optional, for your Sheet (single letter)
               address: wants80g ? document.getElementById("address").value : "",
               message: document.getElementById("message").value,
               anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
               receipt: document.getElementById("receipt").checked ? "Yes" : "No",
               status: "Verified",
-              verified: "Yes",
-              // Optional convenience fields for your Sheet (map if you add the columns):
-              panType: panType,                  // -> PAN_Type (one-letter code)
-              panNameMatch: String(panNameMatch) // -> PAN_NameMatch (TRUE/FALSE)
+              verified: "Yes"
             })
           }).then(() => console.log("✅ Sent to Make.com"))
             .catch(err => console.error("❌ Make error:", err));
