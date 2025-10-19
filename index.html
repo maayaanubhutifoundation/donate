@@ -55,7 +55,7 @@
     }
 
     /* 80G fields hidden until Yes */
-    #panWrap, #addrWrap { display:none; }
+    #undertakingWrap, #panWrap, #addrWrap { display:none; }
   </style>
 </head>
 <body>
@@ -118,7 +118,16 @@
           </div>
         </div>
 
-        <!-- 80G Conditional fields -->
+        <!-- 80G Undertaking + Conditional fields -->
+        <div class="mb-3" id="undertakingWrap">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="undertaking80g">
+            <label class="form-check-label" for="undertaking80g">
+              <strong>I confirm my PAN and address are correct and consent to verification for 80G reporting (Form 10BD/10BE).</strong>
+            </label>
+          </div>
+        </div>
+
         <div class="mb-3" id="panWrap">
           <label class="form-label" for="pan">PAN*</label>
           <input type="text" class="form-control" id="pan"
@@ -283,6 +292,8 @@
     // [80G] toggle logic (Default = No)
     const need80gYes = document.getElementById('need80gYes');
     const need80gNo  = document.getElementById('need80gNo');
+    const undertakingWrap = document.getElementById('undertakingWrap');
+    const undertaking80g  = document.getElementById('undertaking80g');
     const panWrap    = document.getElementById('panWrap');
     const addrWrap   = document.getElementById('addrWrap');
     const panInput   = document.getElementById('pan');
@@ -295,11 +306,18 @@
 
     function toggle80G(){
       const need=(need80gValue()==='yes');
-      panWrap.style.display=need?'block':'none';
-      addrWrap.style.display=need?'block':'none';
-      panInput.required=need; addrInput.required=need;
+      undertakingWrap.style.display = need ? 'block' : 'none';
+      panWrap.style.display = need ? 'block' : 'none';
+      addrWrap.style.display = need ? 'block' : 'none';
+
+      undertaking80g.required = need;
+      panInput.required = need;
+      addrInput.required = need;
+
       nameLabel.textContent = need ? 'Name as per PAN*' : 'Full Name*';
+
       if(!need){
+        undertaking80g.checked = false;
         panInput.value=''; addrInput.value='';
         panInput.setCustomValidity(''); panHint.textContent='';
       }
@@ -384,11 +402,18 @@
     nameInput.addEventListener('input', validatePAN);
 
     // OTP auto-submit
+    const otpInput = document.getElementById("otp");
     otpInput.addEventListener("input", () => {
       if (otpInput.value.length === 6 && confirmationResult) submitBtn.click();
     });
 
-    // Submit/OTP flow (unchanged except we’ll send panType only)
+    // Submit/OTP flow (unchanged except we require undertaking when 80G=Yes and send panType)
+    const otpFeedback = document.getElementById("otpFeedback");
+    const submitBtn = document.getElementById("submitBtn");
+    const authConfirmed = document.getElementById("authConfirmed");
+    const donationForm = document.getElementById("donationForm");
+    const donationOptions = document.getElementById("donationOptions");
+
     submitBtn.addEventListener("click", () => {
       const mobileValue = document.getElementById("mobile").value;
       if (!/^([6-9])\d{9}$/.test(mobileValue)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
@@ -396,6 +421,7 @@
 
       // 80G conditional validation
       if(need80gValue()==='yes'){
+        if(!undertaking80g.checked) return alert("Please confirm the 80G undertaking.");
         validatePAN();
         if(panInput.validationMessage){
           alert(panInput.validationMessage);
@@ -415,7 +441,7 @@
             return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
           }).then(result => {
             confirmationResult = result;
-            otpSection.classList.remove("d-none");
+            document.getElementById("otpSection").classList.remove("d-none");
             otpInput.focus();
             submitBtn.disabled = false;
             submitBtn.textContent = "Submit OTP for Donation";
@@ -448,7 +474,7 @@
               phone: document.getElementById("mobile").value,
               email: document.getElementById("email").value,
               pan: panVal,
-              panType: panType,                  // <-- optional, for your Sheet (single letter)
+              panType: panType,                  // optional, for your Sheet
               address: wants80g ? document.getElementById("address").value : "",
               message: document.getElementById("message").value,
               anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
