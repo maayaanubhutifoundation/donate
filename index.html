@@ -27,12 +27,12 @@
     #donationOptions { display:none; margin-top:20px; }
     #otpSection { margin-bottom:15px; background:#eef5ff; padding:15px; border-radius:8px; }
 
-    /* Consent checkboxes */
+    /* === Highlight consent checkboxes === */
     .form-check-input { border:2px solid #007bff !important; box-shadow:none !important; }
     .form-check-input:checked { background-color:#007bff !important; border-color:#007bff !important; }
     .form-check-label { color:#004085 !important; font-weight:500; }
 
-    /* Inputs */
+    /* [BORDER] Highlight input boxes */
     .form-control, .form-select {
       border:2px solid #7846e4 !important;
       border-radius:12px !important;
@@ -44,7 +44,7 @@
       outline:none;
     }
 
-    /* Section wrapper */
+    /* [BORDER] Section wrapper (from Name down to Message) */
     .field-section {
       border:3px solid #7846e4;
       border-radius:14px;
@@ -54,8 +54,8 @@
       box-shadow: 0 8px 20px rgba(17,24,39,.06);
     }
 
-    /* 80G fields hidden until Yes */
-    #undertakingWrap, #panWrap, #addrWrap { display:none; }
+    /* [80G] start hidden until user selects "Yes" */
+    #undertakingWrap, #panWrap, #addrWrap { display:none; } /* NEW: added undertakingWrap */
   </style>
 </head>
 <body>
@@ -80,10 +80,11 @@
       <p><strong>“We make a living by what we get, but we make a life by what we give.”</strong> – Winston Churchill</p>
     </div>
 
-    <form id="donationForm" novalidate>
+    <form id="donationForm">
+      <!-- [BORDER] Start bordered section (from Name down to Message) -->
       <div class="field-section">
         <div class="mb-3">
-          <label id="nameLabel" class="form-label">Full Name*</label>
+          <label class="form-label" id="nameLabel">Full Name*</label> <!-- NEW: id for label -->
           <input type="text" class="form-control" id="name" required>
         </div>
 
@@ -105,21 +106,21 @@
           <input type="email" class="form-control" id="email">
         </div>
 
-        <!-- 80G Toggle (Default = No) -->
+        <!-- [80G] Toggle radios -->
         <div class="mb-3">
           <label class="form-label d-block mb-1">Require 80G Tax Exemption Certificate?</label>
           <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="need80g" id="need80gYes" value="yes">
+            <input class="form-check-input" type="radio" name="need80g" id="need80gYes" value="yes" checked>
             <label class="form-check-label" for="need80gYes">Yes</label>
           </div>
           <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="need80g" id="need80gNo" value="no" checked>
+            <input class="form-check-input" type="radio" name="need80g" id="need80gNo" value="no">
             <label class="form-check-label" for="need80gNo">No</label>
           </div>
         </div>
 
-        <!-- 80G Undertaking + Conditional fields -->
-        <div class="mb-3" id="undertakingWrap">
+        <!-- [80G] Undertaking (shows only when Yes) -->
+        <div class="mb-3" id="undertakingWrap"> <!-- NEW -->
           <div class="form-check">
             <input class="form-check-input" type="checkbox" id="undertaking80g">
             <label class="form-check-label" for="undertaking80g">
@@ -128,20 +129,19 @@
           </div>
         </div>
 
+        <!-- [80G] Conditional fields -->
         <div class="mb-3" id="panWrap">
-          <label class="form-label" for="pan">PAN*</label>
+          <label class="form-label">PAN (Required for 80G receipt)</label>
           <input type="text" class="form-control" id="pan"
                  style="text-transform:uppercase;"
                  maxlength="10"
-                 pattern="^[A-Z]{5}[0-9]{4}[A-Z]$"
-                 autocomplete="off"
-                 inputmode="latin"
-                 title="Format: 5 letters + 4 digits + 1 letter (e.g., ABCDE1234F)">
-          <div class="form-text" id="panHint"></div>
+                 pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                 title="PAN format: 5 letters, 4 digits, 1 letter (e.g., AEZPB3382G)">
+          <div class="form-text" id="panHint"></div> <!-- NEW: hint line -->
         </div>
 
         <div class="mb-3" id="addrWrap">
-          <label class="form-label" for="address">Address*</label>
+          <label class="form-label">Address (Required for 80G receipt)</label>
           <input type="text" class="form-control" id="address">
         </div>
 
@@ -150,6 +150,7 @@
           <textarea class="form-control" id="message" rows="2"></textarea>
         </div>
       </div>
+      <!-- [BORDER] End bordered section -->
 
       <div style="color:#7846e4; font-size:.9rem; font-weight:500; border-left:4px solid #007bff; padding-left:10px; margin-bottom:12px;">
         You are requested to authenticate your mobile number by pressing the <strong>Submit</strong> button before the QR code, UPI ID, and Bank details become visible to you for donation.
@@ -289,144 +290,97 @@
     const donationForm = document.getElementById("donationForm");
     const donationOptions = document.getElementById("donationOptions");
 
-    // [80G] toggle logic (Default = No)
-    const need80gYes = document.getElementById('need80gYes');
-    const need80gNo  = document.getElementById('need80gNo');
-    const undertakingWrap = document.getElementById('undertakingWrap');
-    const undertaking80g  = document.getElementById('undertaking80g');
-    const panWrap    = document.getElementById('panWrap');
-    const addrWrap   = document.getElementById('addrWrap');
-    const panInput   = document.getElementById('pan');
-    const addrInput  = document.getElementById('address');
-    const nameInput  = document.getElementById('name');
-    const nameLabel  = document.getElementById('nameLabel');
-    const panHint    = document.getElementById('panHint');
+    // [80G] toggle logic
+    const need80gYes=document.getElementById('need80gYes');
+    const need80gNo=document.getElementById('need80gNo');
+    const undertakingWrap=document.getElementById('undertakingWrap'); // NEW
+    const undertaking80g=document.getElementById('undertaking80g');   // NEW
+    const panWrap=document.getElementById('panWrap');
+    const addrWrap=document.getElementById('addrWrap');
+    const panInput=document.getElementById('pan');
+    const addrInput=document.getElementById('address');
+    const nameInput=document.getElementById('name');
+    const nameLabel=document.getElementById('nameLabel'); // NEW
+    const panHint=document.getElementById('panHint');     // NEW
 
-    function need80gValue(){ const r=document.querySelector('input[name="need80g"]:checked'); return r?r.value:'no'; }
-
+    function need80gValue(){ const r=document.querySelector('input[name="need80g"]:checked'); return r?r.value:'yes'; }
     function toggle80G(){
       const need=(need80gValue()==='yes');
-      undertakingWrap.style.display = need ? 'block' : 'none';
-      panWrap.style.display = need ? 'block' : 'none';
-      addrWrap.style.display = need ? 'block' : 'none';
-
-      undertaking80g.required = need;
-      panInput.required = need;
-      addrInput.required = need;
-
-      nameLabel.textContent = need ? 'Name as per PAN*' : 'Full Name*';
-
-      if(!need){
-        undertaking80g.checked = false;
+      undertakingWrap.style.display=need?'block':'none';     // NEW
+      panWrap.style.display=need?'block':'none';
+      addrWrap.style.display=need?'block':'none';
+      if (need) {
+        undertaking80g.required = true;                      // NEW
+        panInput.required=true; addrInput.required=true;
+        nameLabel.textContent='Name as per PAN*';           // NEW
+      } else {
+        undertaking80g.required = false;                     // NEW
+        undertaking80g.checked = false;                      // NEW
+        panInput.required=false; addrInput.required=false;
+        nameLabel.textContent='Full Name*';                 // NEW
         panInput.value=''; addrInput.value='';
         panInput.setCustomValidity(''); panHint.textContent='';
       }
     }
     need80gYes.addEventListener('change',toggle80G);
     need80gNo.addEventListener('change',toggle80G);
-    toggle80G(); // init with No
+    toggle80G(); // init
 
-    // PAN validation: format + 5th-letter vs name rule
-    const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
-
-    function getPanTypeChar(pan){ return pan?.toUpperCase().charAt(3) || ''; } // 4th char
-    function getFifthChar(pan){ return pan?.toUpperCase().charAt(4) || ''; }    // 5th char
-    function getSurnameInitial(name){
-      const parts = (name||'').trim().split(/\s+/);
-      const last = parts[parts.length-1] || '';
-      const letter = (last.match(/[A-Za-z]/)?.[0]||'').toUpperCase();
-      return letter;
-    }
-    function getEntityInitial(name){
-      const letter = ((name||'').trim().match(/[A-Za-z]/)||[''])[0].toUpperCase();
-      return letter;
-    }
-
-    function explainType(t){
-      switch(t){
-        case 'P': return 'Individual';
-        case 'C': return 'Company';
-        case 'H': return 'HUF';
-        case 'F': return 'Firm/LLP';
-        case 'A': return 'AOP';
-        case 'B': return 'BOI';
-        case 'T': return 'Trust';
-        case 'L': return 'Local Authority';
-        case 'J': return 'Artificial Juridical Person';
-        case 'G': return 'Government';
-        default: return '';
-      }
-    }
+    // === PAN validation: regex + 5th-letter vs name rule ===
+    const PAN_REGEX=/^[A-Z]{5}[0-9]{4}[A-Z]$/;
+    function getPanTypeChar(p){return p?.toUpperCase().charAt(3)||'';} // 4th
+    function getFifthChar(p){return p?.toUpperCase().charAt(4)||'';}   // 5th
+    function getSurnameInitial(n){ const parts=(n||'').trim().split(/\s+/); const last=parts[parts.length-1]||''; return (last.match(/[A-Za-z]/)?.[0]||'').toUpperCase(); }
+    function getEntityInitial(n){ return ((n||'').trim().match(/[A-Za-z]/)||[''])[0].toUpperCase(); }
+    function explainType(t){ return ({P:'Individual',C:'Company',H:'HUF',F:'Firm/LLP',A:'AOP',B:'BOI',T:'Trust',L:'Local Authority',J:'Artificial Juridical Person',G:'Government'})[t]||''; }
 
     function validatePAN(){
       if(need80gValue()!=='yes'){ panInput.setCustomValidity(''); panHint.textContent=''; return; }
-
-      const pan = panInput.value.toUpperCase();
-      const name = nameInput.value;
+      const pan=panInput.value.toUpperCase();
+      const name=nameInput.value;
 
       if(!PAN_REGEX.test(pan)){
-        panInput.setCustomValidity('Invalid PAN format. Example: ABCDE1234F');
-        panHint.textContent = 'Format must be 5 letters + 4 digits + 1 letter (e.g., ABCDE1234F).';
+        panInput.setCustomValidity('Enter a valid PAN (e.g., ABCDE1234F).');
+        panHint.textContent='Format must be 5 letters + 4 digits + 1 letter.';
         return;
       }
+      const typeChar=getPanTypeChar(pan);
+      const fifth=getFifthChar(pan);
+      const expected=(typeChar==='P')?getSurnameInitial(name):getEntityInitial(name);
 
-      const typeChar  = getPanTypeChar(pan); // 4th
-      const fifthChar = getFifthChar(pan);
-
-      // Compute expected initial from name based on type
-      let expectedInitial = '';
-      if(typeChar === 'P'){ // Individual
-        expectedInitial = getSurnameInitial(name);
-      }else{ // Non-individual
-        expectedInitial = getEntityInitial(name);
-      }
-
-      if(!expectedInitial){
-        panInput.setCustomValidity('Enter the '+(typeChar==='P'?'surname (last word)':'entity name')+' so its initial matches PAN 5th letter.');
-        panHint.textContent = 'PAN Type: '+typeChar+' ('+explainType(typeChar)+'). The 5th PAN letter "'+fifthChar+'" must match '+(typeChar==='P'?'Surname initial':'Entity initial')+'.';
+      if(!expected){
+        panInput.setCustomValidity('Enter '+(typeChar==='P'?'surname (last word)':'entity name')+' so its initial matches PAN 5th letter.');
+        panHint.textContent='PAN Type: '+typeChar+' ('+explainType(typeChar)+'). 5th letter "'+fifth+'" must match '+(typeChar==='P'?'surname':'entity')+' initial.';
         return;
       }
-
-      if(fifthChar !== expectedInitial){
-        panInput.setCustomValidity('Name mismatch: PAN 5th letter "'+fifthChar+'" should match '+(typeChar==='P'?'Surname':'Entity')+' initial "'+expectedInitial+'".');
-        panHint.textContent = 'PAN Type: '+typeChar+' ('+explainType(typeChar)+'). Expected initial "'+expectedInitial+'", got "'+fifthChar+'".';
+      if(fifth!==expected){
+        panInput.setCustomValidity('Name mismatch: PAN 5th letter "'+fifth+'" ≠ expected "'+expected+'".');
+        panHint.textContent='Mismatch: expected "'+expected+'", got "'+fifth+'".';
         return;
       }
-
-      // All good
       panInput.setCustomValidity('');
-      panHint.textContent = 'PAN Type: '+typeChar+' ('+explainType(typeChar)+'). Name initial matches.';
+      panHint.textContent='✔ PAN verified ('+explainType(typeChar)+').';
     }
 
-    panInput.addEventListener('input', ()=>{ panInput.value = panInput.value.toUpperCase(); validatePAN(); });
+    panInput.addEventListener('input',()=>{ panInput.value=panInput.value.toUpperCase(); validatePAN(); });
     nameInput.addEventListener('input', validatePAN);
 
-    // OTP auto-submit
-    const otpInput = document.getElementById("otp");
-    otpInput.addEventListener("input", () => {
-      if (otpInput.value.length === 6 && confirmationResult) submitBtn.click();
+    // === OTP auto-submit ===
+    const otpInputEl = document.getElementById("otp");
+    otpInputEl.addEventListener("input", () => {
+      if (otpInputEl.value.length === 6 && confirmationResult) submitBtn.click();
     });
-
-    // Submit/OTP flow (unchanged except we require undertaking when 80G=Yes and send panType)
-    const otpFeedback = document.getElementById("otpFeedback");
-    const submitBtn = document.getElementById("submitBtn");
-    const authConfirmed = document.getElementById("authConfirmed");
-    const donationForm = document.getElementById("donationForm");
-    const donationOptions = document.getElementById("donationOptions");
 
     submitBtn.addEventListener("click", () => {
       const mobileValue = document.getElementById("mobile").value;
       if (!/^([6-9])\d{9}$/.test(mobileValue)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
       if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
 
-      // 80G conditional validation
+      // [80G] conditional validation & undertaking gate
       if(need80gValue()==='yes'){
         if(!undertaking80g.checked) return alert("Please confirm the 80G undertaking.");
         validatePAN();
-        if(panInput.validationMessage){
-          alert(panInput.validationMessage);
-          return;
-        }
+        if(panInput.validationMessage){ alert(panInput.validationMessage); return; }
         if(!addrInput.value.trim()) return alert("Address is required for 80G receipt.");
       }
 
@@ -441,8 +395,8 @@
             return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
           }).then(result => {
             confirmationResult = result;
-            document.getElementById("otpSection").classList.remove("d-none");
-            otpInput.focus();
+            otpSection.classList.remove("d-none");
+            otpInputEl.focus();
             submitBtn.disabled = false;
             submitBtn.textContent = "Submit OTP for Donation";
           }).catch(err => {
@@ -456,15 +410,12 @@
           submitBtn.textContent = "Submit";
         }
       } else {
-        confirmationResult.confirm(otpInput.value).then(() => {
+        confirmationResult.confirm(otpInputEl.value).then(() => {
           authConfirmed.style.display = "block";
           donationForm.style.display = "none";
           donationOptions.style.display = "block";
 
           const wants80g = (need80gValue()==='yes');
-          const panVal   = wants80g ? (panInput.value || "").toUpperCase() : "";
-          const panType  = panVal ? getPanTypeChar(panVal) : ""; // one-letter P/C/H/F/A/B/T/L/J/G
-
           fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -473,10 +424,9 @@
               name: document.getElementById("name").value,
               phone: document.getElementById("mobile").value,
               email: document.getElementById("email").value,
-              pan: panVal,
-              panType: panType,                  // optional, for your Sheet
-              address: wants80g ? document.getElementById("address").value : "",
+              pan: wants80g ? (document.getElementById("pan").value || "").toUpperCase() : "",
               message: document.getElementById("message").value,
+              address: wants80g ? document.getElementById("address").value : "",
               anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
               receipt: document.getElementById("receipt").checked ? "Yes" : "No",
               status: "Verified",
@@ -486,8 +436,8 @@
             .catch(err => console.error("❌ Make error:", err));
 
         }).catch(err => {
-          otpFeedback.textContent = "Wrong OTP";
-          otpFeedback.style.color = "red";
+          document.getElementById("otpFeedback").textContent = "Wrong OTP";
+          document.getElementById("otpFeedback").style.color = "red";
         });
       }
     });
