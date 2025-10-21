@@ -1,216 +1,316 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Donate to Maaya Anubhuti Foundation</title>
+
+  <!-- Firebase (unchanged) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <!-- Turnstile (unchanged) -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <style>
-    body { background-color:#7846e4; padding:40px 10px; }
-    .container { max-width:720px; margin:auto; background:#fff; padding:30px; border-radius:10px; box-shadow:0 0 12px rgba(0,0,0,0.1); }
-    h1 { color:#e68a00; text-align:center; margin-bottom:5px; }
-    .lead { font-size:1rem; color:#444; text-align:center; margin-bottom:25px; }
-    .form-control { width:100%; }
-    .mobile-wrapper { position:relative; }
-    .mobile-wrapper input { padding-left:50px; }
-    .mobile-wrapper::before {
-      content:"+91"; position:absolute; left:12px; top:50%; transform:translateY(-50%);
-      font-weight:bold; color:#555;
+    :root{ --maf-violet:#7846e4; --maf-accent:#ff9900; }
+
+    body{ background-color: var(--maf-violet); padding:40px 10px; }
+    .page-wrap{ max-width: 1200px; margin: 0 auto; }
+
+    /* Header band */
+    .hero-card{
+      background:#fff; border-radius:12px; padding:24px; box-shadow:0 6px 20px rgba(0,0,0,.08);
     }
-    .btn-primary { background-color:#ff9900; border:none; }
-    .btn-primary:hover { background-color:#e68a00; }
-    #authConfirmed { display:none; margin-top:20px; padding:12px; background:#e8f8ec; border-left:5px solid green; color:#155724; font-weight:bold; }
-    #donationOptions { display:none; margin-top:20px; }
-    #otpSection { margin-bottom:15px; background:#eef5ff; padding:15px; border-radius:8px; }
 
-    /* === Highlight consent checkboxes === */
-    .form-check-input { border:2px solid #007bff !important; box-shadow:none !important; }
-    .form-check-input:checked { background-color:#007bff !important; border-color:#007bff !important; }
-    .form-check-label { color:#004085 !important; font-weight:500; }
+    /* Two-column zone */
+    .split-wrap{ margin-top:16px; }
+    .about-col{
+      background:#fff; border-radius:12px; padding:24px; box-shadow:0 6px 20px rgba(0,0,0,.08);
+    }
+    .form-col .donation-card{
+      background:#fff; border-radius:12px; padding:20px; box-shadow:0 10px 28px rgba(0,0,0,.12);
+      width: 100%; max-width: 420px; margin-left: auto;
+    }
 
-    /* [BORDER] Highlight input boxes */
-    .form-control, .form-select {
-      border:2px solid #7846e4 !important;
+    /* Quotes & ribbons */
+    .ribbon{
+      color:var(--maf-violet); font-size:.92rem; font-weight:600;
+      border-left:4px solid #007bff; padding-left:10px;
+    }
+
+    /* Inputs */
+    .form-control, .form-select{
+      border:2px solid var(--maf-violet) !important;
       border-radius:12px !important;
       box-shadow: inset 0 0 0 2px rgba(120,70,228,.08);
     }
-    .form-control:focus, .form-select:focus {
+    .form-control:focus, .form-select:focus{
       border-color:#5129d6 !important;
-      box-shadow: 0 0 0 4px rgba(120,70,228,.20), inset 0 0 0 2px rgba(120,70,228,.08);
+      box-shadow:0 0 0 4px rgba(120,70,228,.20), inset 0 0 0 2px rgba(120,70,228,.08);
       outline:none;
     }
 
-    /* [BORDER] Section wrapper (from Name down to Message) */
-    .field-section {
-      border:3px solid #7846e4;
-      border-radius:14px;
-      padding:16px;
-      margin-bottom:16px;
-      background:#fff;
-      box-shadow: 0 8px 20px rgba(17,24,39,.06);
-    }
+    /* Floating labels */
+    .form-floating > label{ padding-left:.9rem; color:#495057; }
+    .form-floating .form-control::placeholder{ color:transparent; } /* needed for floating */
+    .small-note{ font-size:.85rem; color:#555; }
 
-    /* [80G] start hidden until user selects "Yes" */
-    #undertakingWrap, #panWrap, #addrWrap { display:none; } /* NEW: added undertakingWrap */
+    /* Buttons */
+    .btn-primary{ background-color: var(--maf-accent); border:none; }
+    .btn-primary:hover{ background-color:#e68a00; }
+
+    /* OTP box */
+    #otpSection{ margin-bottom:12px; background:#eef5ff; padding:12px; border-radius:8px; }
+
+    /* Turnstile spacing */
+    .cf-turnstile{ margin-top:8px; }
+
+    /* Success band */
+    #authConfirmed{
+      display:none; margin-top:20px; padding:12px;
+      background:#e8f8ec; border-left:5px solid green; color:#155724; font-weight:700;
+    }
+    #donationOptions{ display:none; margin-top:20px; }
+
+    /* Hide 80G detail blocks initially (JS will open by default Yes) */
+    #undertakingWrap, #panWrap, #addrBlock{ display:none; }
+
+    /* Mobile stacking order: form first */
+    @media (max-width: 991.98px){
+      .form-col{ order:1; }
+      .about-col{ order:2; margin-top:16px; }
+      .form-col .donation-card{ margin: 0 auto; }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Logo -->
-    <div style="text-align: right; margin-bottom: -30px;">
-      <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,h=429,fit=crop/A0xj3j1bO7C10DBz/logo_maf-Awv9zveMloUr16Ba.jpeg" alt="MAF Logo" style="height: 60px; border-radius: 5px;">
+
+  <div class="page-wrap">
+
+    <!-- Logo / Title / Intro -->
+    <div class="hero-card mb-3">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h1 class="h3" style="color:#e68a00; margin:0 0 4px;">Support Maaya Anubhuti Foundation 💛</h1>
+          <p class="mb-2 small-note">
+            Your generous donation helps us care for the elderly, build a compassionate environment, and train youth to serve with dignity.
+          </p>
+        </div>
+        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,h=429,fit=crop/A0xj3j1bO7C10DBz/logo_maf-Awv9zveMloUr16Ba.jpeg"
+             alt="MAF Logo" style="height:56px; border-radius:6px;">
+      </div>
+
+      <div class="ribbon mt-2">
+        <div><strong>YOUR CONTRIBUTIONS ARE ELIGIBLE FOR 50% TAX BENEFIT UNDER SECTION 80G</strong>.</div>
+        <div><strong>PAN: AATCM5136F &nbsp; | &nbsp; 80G URN: AATCM5136FF20251</strong>.</div>
+      </div>
+
+      <!-- Quotes -->
+      <div class="mt-3 small-note" style="color:#333;">
+        <div><strong>“It's not how much we give but how much love we put into giving.”</strong> — Mother Teresa</div>
+        <div><strong>“The best way to find yourself is to lose yourself in the service of others.”</strong> — Mahatma Gandhi</div>
+        <div><strong>“We make a living by what we get, but we make a life by what we give.”</strong> — Winston Churchill</div>
+      </div>
+
+      <!-- 80G toggle (requested placement: below quotes, above input block) -->
+      <div class="mt-3">
+        <label class="form-label fw-semibold me-2">I require 80G Tax Exemption Certificate:</label>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="need80g" id="need80gYes" value="yes" checked>
+          <label class="form-check-label" for="need80gYes">Yes</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="need80g" id="need80gNo" value="no">
+          <label class="form-check-label" for="need80gNo">No</label>
+        </div>
+      </div>
     </div>
 
-    <h1>Support Maaya Anubhuti Foundation 💛</h1>
-    <p class="lead">Your generous donation helps us care for the elderly, build a compassionate environment, and train youth to serve with dignity. Join us in bringing hope and care to those who need it most.</p>
+    <!-- Two-column area -->
+    <div class="row split-wrap g-3">
+      <!-- RIGHT: Donation Form (first on mobile) -->
+      <div class="col-12 col-lg-5 form-col">
+        <form id="donationForm" class="donation-card">
 
-    <div style="color:#7846e4; font-size:.9rem; font-weight:500; border-left:4px solid #007bff; padding-left:10px; margin-bottom:12px;">
-      <p><strong>“YOUR CONTRIBUTIONS ARE ELIGIBLE FOR 50% TAX BENEFIT UNDER SECTION 80G AS MAAYA ANUBHUTI FOUNDATION IS REGISTERED AS NON-PROFIT ORGANIZATION”</strong>.</p>
-      <p><strong>PAN: AATCM5136F | 80G NUMBER: AATCM5136FF20251</strong>.</p>
-    </div>
-
-    <!-- Quotes -->
-    <div class="mt-3" style="font-size: 0.9rem; color: #333;">
-      <p><strong>“It's not how much we give but how much love we put into giving.”</strong> – Mother Teresa</p>
-      <p><strong>“The best way to find yourself is to lose yourself in the service of others.”</strong> – Mahatma Gandhi</p>
-      <p><strong>“We make a living by what we get, but we make a life by what we give.”</strong> – Winston Churchill</p>
-    </div>
-
-    <form id="donationForm">
-      <!-- [BORDER] Start bordered section (from Name down to Message) -->
-      <div class="field-section">
-        <div class="mb-3">
-          <label class="form-label" id="nameLabel">Full Name*</label> <!-- NEW: id for label -->
-          <input type="text" class="form-control" id="name" required>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Mobile Number*</label>
-          <div class="mobile-wrapper">
-            <input type="tel" class="form-control" id="mobile" pattern="[0-9]{10}" required placeholder="xxxxxxxxxx">
+          <!-- Undertaking (visible when Yes) -->
+          <div class="mb-3" id="undertakingWrap">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="undertaking80g">
+              <label class="form-check-label" for="undertaking80g">
+                <strong>I confirm my PAN and address are correct and consent to verification for 80G reporting.</strong>
+              </label>
+            </div>
           </div>
-        </div>
 
-        <div id="otpSection" class="d-none">
-          <label for="otp" class="form-label">Enter OTP:</label>
-          <input type="text" id="otp" class="form-control mt-1" autofocus />
-          <div id="otpFeedback" class="fw-bold mt-2"></div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Email (Optional)</label>
-          <input type="email" class="form-control" id="email">
-        </div>
-
-        <!-- [80G] Toggle radios -->
-        <div class="mb-3">
-          <label class="form-label d-block mb-1">Require 80G Tax Exemption Certificate?</label>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="need80g" id="need80gYes" value="yes" checked>
-            <label class="form-check-label" for="need80gYes">Yes</label>
+          <!-- Name (floating; text changes with toggle) -->
+          <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="name" placeholder="Name as per PAN" required>
+            <label for="name" id="nameLabel">Name as per PAN*</label>
           </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="need80g" id="need80gNo" value="no">
-            <label class="form-check-label" for="need80gNo">No</label>
-          </div>
-        </div>
 
-        <!-- [80G] Undertaking (shows only when Yes) -->
-        <div class="mb-3" id="undertakingWrap"> <!-- NEW -->
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="undertaking80g">
-            <label class="form-check-label" for="undertaking80g">
-              <strong>I confirm my PAN and address are correct and consent to verification for 80G reporting (Form 10BD/10BE).</strong>
+          <!-- Mobile with +91 -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Mobile Number*</label>
+            <div class="input-group">
+              <span class="input-group-text fw-bold">+91</span>
+              <input type="tel" class="form-control" id="mobile" pattern="[0-9]{10}" placeholder="10-digit number" required>
+            </div>
+          </div>
+
+          <!-- OTP box (unchanged) -->
+          <div id="otpSection" class="d-none">
+            <label for="otp" class="form-label">Enter OTP:</label>
+            <input type="text" id="otp" class="form-control mt-1" inputmode="numeric" maxlength="6" />
+            <div id="otpFeedback" class="fw-bold mt-2"></div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-floating mb-3">
+            <input type="email" class="form-control" id="email" placeholder="Email (Optional)">
+            <label for="email">Email (Optional)</label>
+          </div>
+
+          <!-- PAN (floating; shown when Yes) -->
+          <div class="form-floating mb-2" id="panWrap">
+            <input type="text" class="form-control" id="pan" placeholder="ABCDE1234F"
+                   style="text-transform:uppercase;" maxlength="10">
+            <label for="pan">PAN (Required for 80G receipt)</label>
+          </div>
+          <div class="small-note mb-3" id="panHint"></div>
+
+          <!-- Address block (segmented) -->
+          <div id="addrBlock">
+            <div class="form-floating mb-3">
+              <select class="form-select" id="country">
+                <option value="">Select Country</option>
+                <option value="India" selected>India</option>
+              </select>
+              <label for="country">Country</label>
+            </div>
+
+            <div class="form-floating mb-3">
+              <select class="form-select" id="state">
+                <option value="">Select State</option>
+                <!-- Indian States & UTs -->
+                <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option>
+                <option>Bihar</option><option>Chhattisgarh</option><option>Goa</option><option>Gujarat</option>
+                <option>Haryana</option><option>Himachal Pradesh</option><option>Jharkhand</option>
+                <option>Karnataka</option><option>Kerala</option><option>Madhya Pradesh</option>
+                <option>Maharashtra</option><option>Manipur</option><option>Meghalaya</option>
+                <option>Mizoram</option><option>Nagaland</option><option>Odisha</option>
+                <option>Punjab</option><option>Rajasthan</option><option>Sikkim</option>
+                <option>Tamil Nadu</option><option>Telangana</option><option>Tripura</option>
+                <option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option>
+                <option>Andaman and Nicobar Islands</option><option>Chandigarh</option>
+                <option>Dadra and Nagar Haveli and Daman and Diu</option><option>Delhi</option>
+                <option>Jammu and Kashmir</option><option>Ladakh</option><option>Lakshadweep</option>
+                <option>Puducherry</option>
+              </select>
+              <label for="state">State</label>
+            </div>
+
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="city" placeholder="City">
+              <label for="city">City</label>
+            </div>
+
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="address" placeholder="House/Colony/Street">
+              <label for="address">Address (HN/Colony/Street)</label>
+            </div>
+
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="pin" placeholder="PIN" inputmode="numeric" maxlength="6">
+              <label for="pin">PIN</label>
+            </div>
+          </div>
+
+          <div class="form-floating mb-3">
+            <textarea class="form-control" id="message" placeholder="Message (Optional)" style="height: 80px"></textarea>
+            <label for="message">Message (Optional)</label>
+          </div>
+
+          <div class="small-note mb-2 ribbon" style="border-left-color:#007bff;">
+            Authenticate your mobile number by pressing <strong>Submit</strong> to reveal QR, UPI and bank details.
+          </div>
+
+          <!-- Consents -->
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="declaration" required>
+            <label class="form-check-label" for="declaration">
+              I hereby declare I am an Indian citizen
+              <span id="more" style="display:none;"> donating my own funds. I consent to contact via WhatsApp/email/SMS for donation updates and receipts.</span>
+              <button type="button" id="readToggle" class="btn btn-link p-0" style="font-size:13px;">Read More</button>
             </label>
           </div>
-        </div>
 
-        <!-- [80G] Conditional fields -->
-        <div class="mb-3" id="panWrap">
-          <label class="form-label">PAN (Required for 80G receipt)</label>
-          <input type="text" class="form-control" id="pan"
-                 style="text-transform:uppercase;"
-                 maxlength="10"
-                 pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
-                 title="PAN format: 5 letters, 4 digits, 1 letter (e.g., AEZPB3382G)">
-          <div class="form-text" id="panHint"></div> <!-- NEW: hint line -->
-        </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="anonymous">
+            <label class="form-check-label" for="anonymous">I opt to remain anonymous and not have my name published on the website.</label>
+          </div>
 
-        <div class="mb-3" id="addrWrap">
-          <label class="form-label">Address (Required for 80G receipt)</label>
-          <input type="text" class="form-control" id="address">
-        </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="receipt">
+            <label class="form-check-label" for="receipt">I would like to receive the receipt via WhatsApp/email.</label>
+          </div>
 
-        <div class="mb-0">
-          <label class="form-label">Message (Optional)</label>
-          <textarea class="form-control" id="message" rows="2"></textarea>
-        </div>
-      </div>
-      <!-- [BORDER] End bordered section -->
-
-      <div style="color:#7846e4; font-size:.9rem; font-weight:500; border-left:4px solid #007bff; padding-left:10px; margin-bottom:12px;">
-        You are requested to authenticate your mobile number by pressing the <strong>Submit</strong> button before the QR code, UPI ID, and Bank details become visible to you for donation.
+          <div class="cf-turnstile" data-sitekey="0x4AAAAAABnuBDDS5ho0ShrZ"></div>
+          <button type="button" class="btn btn-primary w-100 mt-2" id="submitBtn">Submit</button>
+        </form>
       </div>
 
-      <div class="form-check mb-2">
-        <input class="form-check-input" type="checkbox" id="declaration" required>
-        <label class="form-check-label" for="declaration">
-          I hereby declare I am an Indian citizen
-          <span id="more" style="display: none;"> donating my own funds. I consent to contact via WhatsApp/email/SMS for donation updates, receipts.</span>
-          <button type="button" id="readToggle" class="btn btn-link p-0" style="font-size: 13px;" onclick="toggleReadMore()">Read More</button>
-        </label>
+      <!-- LEFT: About + FAQ link -->
+      <div class="col-12 col-lg-7 about-col">
+        <h2 class="h5" style="color:var(--maf-violet);">About your contribution</h2>
+        <p class="mb-3">
+          Your support nourishes underprivileged elders with meals and clothing today, and builds the foundation for our
+          eco-friendly senior living centre tomorrow. Thank you for standing with dignity, care, and hope.
+        </p>
+        <p class="mb-0">
+          👉 For tax-benefit details, see our <a href="https://www.maayaanubhuti.org/support" target="_blank">Donation FAQ</a>.
+        </p>
       </div>
+    </div>
 
-      <div class="form-check mb-2">
-        <input class="form-check-input" type="checkbox" id="anonymous">
-        <label class="form-check-label" for="anonymous"> I opt to remain anonymous and not have my name published on the website.</label>
-      </div>
-      <div class="form-check mb-3">
-        <input class="form-check-input" type="checkbox" id="receipt">
-        <label class="form-check-label" for="receipt">I would like to receive the receipt via WhatsApp/email.</label>
-      </div>
-
-      <div class="cf-turnstile" data-sitekey="0x4AAAAAABnuBDDS5ho0ShrZ"></div>
-      <button type="button" class="btn btn-primary w-100 mt-3" id="submitBtn">Submit</button>
-    </form>
-
-    <div id="authConfirmed">✅ Mobile number authenticated. You may now please proceed with your donation.</div>
+    <!-- Success + options -->
+    <div id="authConfirmed">✅ Mobile number authenticated. You may now proceed with your donation.</div>
 
     <div id="donationOptions">
-      <h5 class="mt-3">Donation Options</h5>
+      <h5 class="mt-3 text-white">Donation Options</h5>
       <div class="row text-center">
         <div class="col-md-4 mb-3">
           <div class="card h-100">
             <div class="card-body">
-              <div style="font-size: 30px;">💳</div>
+              <div style="font-size:30px;">💳</div>
               <h6 class="card-title mt-2">Scan & Pay</h6>
-              <img id="qrCodeImage" src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=384,h=448,fit=crop/A0xj3j1bO7C10DBz/qr_code-m6Lb0BlRRqs7MEGd.png" alt="QR" class="img-fluid" style="max-width: 120px;">
+              <img id="qrCodeImage" src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=384,h=448,fit=crop/A0xj3j1bO7C10DBz/qr_code-m6Lb0BlRRqs7MEGd.png" alt="QR" class="img-fluid" style="max-width:120px;">
               <br>
               <button onclick="downloadQR()" class="btn btn-sm btn-outline-primary mt-2">Download QR Code</button>
-              <small class="d-block mt-1 text-muted" style="font-size: 0.8rem;">
-                To use this QR on the same phone, download it and then upload it from your gallery in PayTM or UPI app.
-              </small>
+              <small class="d-block mt-1 text-muted" style="font-size:.8rem;">To use this QR on the same phone, download it and then upload it from your gallery in your UPI app.</small>
             </div>
           </div>
         </div>
+
         <div class="col-md-4 mb-3">
           <div class="card h-100">
             <div class="card-body">
-              <div style="font-size: 30px;">🔢</div>
+              <div style="font-size:30px;">🔢</div>
               <h6 class="card-title mt-2">UPI ID</h6>
               <p id="upiText">9599914274@idbi</p>
               <button onclick="copyText('upiText')" class="btn btn-sm btn-outline-primary">Copy UPI ID</button>
             </div>
           </div>
         </div>
+
         <div class="col-md-4 mb-3">
           <div class="card h-100">
             <div class="card-body">
-              <div style="font-size: 30px;">🏦</div>
+              <div style="font-size:30px;">🏦</div>
               <h6 class="card-title mt-2">Bank Transfer</h6>
               <small>
                 A/C No: <span id="accNo">0873102000012698</span><br>
@@ -226,7 +326,7 @@
         <div class="col-md-6 offset-md-3 mb-3">
           <div class="card h-100">
             <div class="card-body">
-              <div style="font-size: 30px;">📮</div>
+              <div style="font-size:30px;">📮</div>
               <h6 class="card-title mt-2">Offline (Cheque/DD)</h6>
               <small>
                 Please send your Cheque/DD in favor of:<br>
@@ -238,39 +338,37 @@
         </div>
       </div>
 
-      <p class="text-muted small mt-3">
-        Maaya Anubhuti Foundation, a registered Section 8 Non-profit organisation (License No. 169918, CIN: U86900UP2025NPL226294, PAN: AATCM5136F), operates with a commitment to transparency and integrity. None of the members of our NGO receive salaries or any monetary benefits from the organization's funds.
+      <p class="text-white-50 small mt-2">
+        Maaya Anubhuti Foundation (Section 8, Licence #169918, CIN U86900UP2025NPL226294, PAN AATCM5136F) operates with transparency and integrity.
       </p>
     </div>
-  </div>
 
-  <div id="recaptcha-container" style="display: none;"></div>
+  </div><!-- /page-wrap -->
+
+  <div id="recaptcha-container" style="display:none;"></div>
 
   <script>
-    function toggleReadMore() {
-      const moreText = document.getElementById("more");
-      const btn = document.getElementById("readToggle");
-      if (moreText.style.display === "none") {
-        moreText.style.display = "inline";
-        btn.textContent = "Read Less";
-      } else {
-        moreText.style.display = "none";
-        btn.textContent = "Read More";
-      }
+    // Toggle "Read more"
+    document.getElementById("readToggle").addEventListener("click", () => {
+      const more = document.getElementById("more");
+      const btn  = document.getElementById("readToggle");
+      const show = more.style.display === "none";
+      more.style.display = show ? "inline" : "none";
+      btn.textContent = show ? "Read Less" : "Read More";
+    });
+
+    function copyText(id){
+      const text=document.getElementById(id).innerText;
+      navigator.clipboard.writeText(text).then(()=>alert("Copied: "+text));
     }
-    function copyText(id) {
-      const text = document.getElementById(id).innerText;
-      navigator.clipboard.writeText(text).then(() => alert("Copied: " + text));
-    }
-    function downloadQR() {
-      const link = document.createElement('a');
-      link.href = document.getElementById('qrCodeImage').src;
-      link.download = 'MAF_QR_Code.png';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    function downloadQR(){
+      const link=document.createElement('a');
+      link.href=document.getElementById('qrCodeImage').src;
+      link.download='MAF_QR_Code.png';
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
+    // Firebase (unchanged config)
     const firebaseConfig = {
       apiKey: "AIzaSyAG6BcfLCiBG4nX2dqa0YDCqtbgiET4qQg",
       authDomain: "maaya-donation-project.firebaseapp.com",
@@ -284,111 +382,137 @@
     let confirmationResult;
     const submitBtn = document.getElementById("submitBtn");
     const otpSection = document.getElementById("otpSection");
-    const otpInput = document.getElementById("otp");
+    const otpInputEl = document.getElementById("otp");
     const otpFeedback = document.getElementById("otpFeedback");
     const authConfirmed = document.getElementById("authConfirmed");
     const donationForm = document.getElementById("donationForm");
     const donationOptions = document.getElementById("donationOptions");
 
-    // [80G] toggle logic
-    const need80gYes=document.getElementById('need80gYes');
-    const need80gNo=document.getElementById('need80gNo');
-    const undertakingWrap=document.getElementById('undertakingWrap'); // NEW
-    const undertaking80g=document.getElementById('undertaking80g');   // NEW
-    const panWrap=document.getElementById('panWrap');
-    const addrWrap=document.getElementById('addrWrap');
-    const panInput=document.getElementById('pan');
-    const addrInput=document.getElementById('address');
-    const nameInput=document.getElementById('name');
-    const nameLabel=document.getElementById('nameLabel'); // NEW
-    const panHint=document.getElementById('panHint');     // NEW
+    // 80G controls
+    const need80gYes = document.getElementById('need80gYes');
+    const need80gNo  = document.getElementById('need80gNo');
+    const nameInput  = document.getElementById('name');
+    const nameLabel  = document.getElementById('nameLabel');
 
-    function need80gValue(){ const r=document.querySelector('input[name="need80g"]:checked'); return r?r.value:'yes'; }
-    function toggle80G(){
-      const need=(need80gValue()==='yes');
-      undertakingWrap.style.display=need?'block':'none';     // NEW
-      panWrap.style.display=need?'block':'none';
-      addrWrap.style.display=need?'block':'none';
-      if (need) {
-        undertaking80g.required = true;                      // NEW
-        panInput.required=true; addrInput.required=true;
-        nameLabel.textContent='Name as per PAN*';           // NEW
-      } else {
-        undertaking80g.required = false;                     // NEW
-        undertaking80g.checked = false;                      // NEW
-        panInput.required=false; addrInput.required=false;
-        nameLabel.textContent='Full Name*';                 // NEW
-        panInput.value=''; addrInput.value='';
-        panInput.setCustomValidity(''); panHint.textContent='';
-      }
+    const undertakingWrap = document.getElementById('undertakingWrap');
+    const undertaking80g  = document.getElementById('undertaking80g');
+
+    const panWrap  = document.getElementById('panWrap');
+    const panInput = document.getElementById('pan');
+    const panHint  = document.getElementById('panHint');
+
+    const country = document.getElementById('country');
+    const state   = document.getElementById('state');
+    const city    = document.getElementById('city');
+    const address = document.getElementById('address');
+    const pin     = document.getElementById('pin');
+
+    function need80gValue(){
+      const r = document.querySelector('input[name="need80g"]:checked');
+      return r ? r.value : 'yes';
     }
-    need80gYes.addEventListener('change',toggle80G);
-    need80gNo.addEventListener('change',toggle80G);
-    toggle80G(); // init
 
-    // === PAN validation: regex + 5th-letter vs name rule ===
+    // PAN helpers
     const PAN_REGEX=/^[A-Z]{5}[0-9]{4}[A-Z]$/;
-    function getPanTypeChar(p){return p?.toUpperCase().charAt(3)||'';} // 4th
-    function getFifthChar(p){return p?.toUpperCase().charAt(4)||'';}   // 5th
-    function getSurnameInitial(n){ const parts=(n||'').trim().split(/\s+/); const last=parts[parts.length-1]||''; return (last.match(/[A-Za-z]/)?.[0]||'').toUpperCase(); }
-    function getEntityInitial(n){ return ((n||'').trim().match(/[A-Za-z]/)||[''])[0].toUpperCase(); }
-    function explainType(t){ return ({P:'Individual',C:'Company',H:'HUF',F:'Firm/LLP',A:'AOP',B:'BOI',T:'Trust',L:'Local Authority',J:'Artificial Juridical Person',G:'Government'})[t]||''; }
+    const getPanTypeChar = p => (p||'').toUpperCase().charAt(3);
+    const getFifthChar   = p => (p||'').toUpperCase().charAt(4);
+    const surnameInitial = n => ((n||'').trim().split(/\s+/).pop() || '').charAt(0).toUpperCase();
+    const entityInitial  = n => (((n||'').trim().match(/[A-Za-z]/) || [''])[0] || '').toUpperCase();
+    const typeExplain = t => ({P:'Individual',C:'Company',H:'HUF',F:'Firm/LLP',A:'AOP',B:'BOI',T:'Trust',L:'Local Authority',J:'Artificial Juridical Person',G:'Government'})[t]||'';
 
     function validatePAN(){
       if(need80gValue()!=='yes'){ panInput.setCustomValidity(''); panHint.textContent=''; return; }
-      const pan=panInput.value.toUpperCase();
-      const name=nameInput.value;
+      const pan = (panInput.value||'').toUpperCase(); panInput.value = pan;
 
       if(!PAN_REGEX.test(pan)){
         panInput.setCustomValidity('Enter a valid PAN (e.g., ABCDE1234F).');
-        panHint.textContent='Format must be 5 letters + 4 digits + 1 letter.';
+        panHint.textContent='Format: 5 letters + 4 digits + 1 letter.';
         return;
       }
-      const typeChar=getPanTypeChar(pan);
-      const fifth=getFifthChar(pan);
-      const expected=(typeChar==='P')?getSurnameInitial(name):getEntityInitial(name);
+      const t = getPanTypeChar(pan);
+      const fifth = getFifthChar(pan);
+      const expected = (t==='P') ? surnameInitial(nameInput.value) : entityInitial(nameInput.value);
 
       if(!expected){
-        panInput.setCustomValidity('Enter '+(typeChar==='P'?'surname (last word)':'entity name')+' so its initial matches PAN 5th letter.');
-        panHint.textContent='PAN Type: '+typeChar+' ('+explainType(typeChar)+'). 5th letter "'+fifth+'" must match '+(typeChar==='P'?'surname':'entity')+' initial.';
+        panInput.setCustomValidity('Please enter your '+(t==='P'?'surname':'name')+' so its initial matches PAN 5th letter.');
+        panHint.textContent = 'PAN Type '+t+' ('+typeExplain(t)+'). 5th letter must match your '+(t==='P'?'surname':'name')+' initial.';
         return;
       }
-      if(fifth!==expected){
-        panInput.setCustomValidity('Name mismatch: PAN 5th letter "'+fifth+'" ≠ expected "'+expected+'".');
-        panHint.textContent='Mismatch: expected "'+expected+'", got "'+fifth+'".';
+      if(fifth !== expected){
+        panInput.setCustomValidity('Name mismatch: expected "'+expected+'", got "'+fifth+'".');
+        panHint.textContent = 'Mismatch: expected "'+expected+'", got "'+fifth+'".';
         return;
       }
       panInput.setCustomValidity('');
-      panHint.textContent='✔ PAN verified ('+explainType(typeChar)+').';
+      panHint.textContent = '✔ PAN verified ('+typeExplain(t)+').';
     }
-
-    panInput.addEventListener('input',()=>{ panInput.value=panInput.value.toUpperCase(); validatePAN(); });
+    panInput.addEventListener('input', validatePAN);
     nameInput.addEventListener('input', validatePAN);
 
-    // === OTP auto-submit ===
-    const otpInputEl = document.getElementById("otp");
-    otpInputEl.addEventListener("input", () => {
-      if (otpInputEl.value.length === 6 && confirmationResult) submitBtn.click();
-    });
+    function setReq(el, on){ if(!el) return; on ? el.setAttribute('required','required') : el.removeAttribute('required'); }
+    function toggleAddrRequired(on){
+      setReq(country,on); setReq(state,on); setReq(city,on); setReq(address,on); setReq(pin,on);
+    }
+
+    function toggle80G(){
+      const need = need80gValue()==='yes';
+      undertakingWrap.style.display = need ? 'block' : 'none';
+      panWrap.style.display = need ? 'block' : 'none';
+      document.getElementById('addrBlock').style.display = need ? 'block' : 'block'; // always visible per spec
+
+      setReq(undertaking80g, need);
+      setReq(panInput, need);
+      toggleAddrRequired(need);
+
+      nameLabel.textContent = need ? 'Name as per PAN*' : 'Full Name*';
+
+      if(!need){
+        undertaking80g.checked = false;
+        panInput.value=''; panInput.setCustomValidity(''); panHint.textContent='';
+      }
+    }
+    need80gYes.addEventListener('change', toggle80G);
+    need80gNo .addEventListener('change', toggle80G);
+    toggle80G(); // initialize (default Yes)
+
+    // PIN & simple address validation helpers
+    function validateAddressIfNeeded(){
+      const need = need80gValue()==='yes';
+      if(!need) return true;
+
+      if(!country.value) { country.focus(); return false; }
+      if(!state.value)   { state.focus();   return false; }
+      if(!city.value.trim()) { city.focus(); return false; }
+      if(!address.value.trim()) { address.focus(); return false; }
+      if(!/^\d{6}$/.test(pin.value||'')) { pin.focus(); alert('Please enter a valid 6-digit PIN.'); return false; }
+      return true;
+    }
+
+    // OTP auto flow
+    if (otpInputEl){
+      otpInputEl.addEventListener("input", () => {
+        if (otpInputEl.value.length === 6 && confirmationResult) submitBtn.click();
+      });
+    }
 
     submitBtn.addEventListener("click", () => {
       const mobileValue = document.getElementById("mobile").value;
       if (!/^([6-9])\d{9}$/.test(mobileValue)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
       if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
 
-      // [80G] conditional validation & undertaking gate
+      // 80G gates
       if(need80gValue()==='yes'){
         if(!undertaking80g.checked) return alert("Please confirm the 80G undertaking.");
         validatePAN();
         if(panInput.validationMessage){ alert(panInput.validationMessage); return; }
-        if(!addrInput.value.trim()) return alert("Address is required for 80G receipt.");
+        if(!validateAddressIfNeeded()) return;
       }
 
       const phone = "+91" + mobileValue;
 
+      // Start OTP if not started
       if (!confirmationResult) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Sending OTP...";
+        submitBtn.disabled = true; submitBtn.textContent = "Sending OTP...";
         try {
           window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
           window.recaptchaVerifier.verify().then(() => {
@@ -397,50 +521,62 @@
             confirmationResult = result;
             otpSection.classList.remove("d-none");
             otpInputEl.focus();
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Submit OTP for Donation";
+            submitBtn.disabled = false; submitBtn.textContent = "Submit OTP for Donation";
           }).catch(err => {
             alert("Error sending OTP: " + err.message);
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Submit";
+            submitBtn.disabled = false; submitBtn.textContent = "Submit";
           });
         } catch (e) {
           alert("Unexpected error. Please reload and try again.");
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Submit";
+          submitBtn.disabled = false; submitBtn.textContent = "Submit";
         }
-      } else {
-        confirmationResult.confirm(otpInputEl.value).then(() => {
-          authConfirmed.style.display = "block";
-          donationForm.style.display = "none";
-          donationOptions.style.display = "block";
-
-          const wants80g = (need80gValue()==='yes');
-          fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              timestamp: new Date().toISOString(),
-              name: document.getElementById("name").value,
-              phone: document.getElementById("mobile").value,
-              email: document.getElementById("email").value,
-              pan: wants80g ? (document.getElementById("pan").value || "").toUpperCase() : "",
-              message: document.getElementById("message").value,
-              address: wants80g ? document.getElementById("address").value : "",
-              anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
-              receipt: document.getElementById("receipt").checked ? "Yes" : "No",
-              status: "Verified",
-              verified: "Yes"
-            })
-          }).then(() => console.log("✅ Sent to Make.com"))
-            .catch(err => console.error("❌ Make error:", err));
-
-        }).catch(err => {
-          document.getElementById("otpFeedback").textContent = "Wrong OTP";
-          document.getElementById("otpFeedback").style.color = "red";
-        });
+        return;
       }
+
+      // Confirm OTP and then reveal options + send to Make
+      confirmationResult.confirm(otpInputEl.value).then(() => {
+        authConfirmed.style.display = "block";
+        donationForm.style.display = "none";
+        donationOptions.style.display = "block";
+
+        const wants80g = (need80gValue()==='yes');
+        const panVal = wants80g ? (panInput.value||'').toUpperCase() : '';
+        const panType = panVal ? panVal.charAt(3) : '';
+
+        // Payload to Make.com (adds new columns)
+        fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            timestamp: new Date().toISOString(),
+            name: document.getElementById("name").value,
+            phone: document.getElementById("mobile").value,
+            email: document.getElementById("email").value || "",
+            pan: panVal,
+            PAN_Type: panType,                      // NEW
+            country: wants80g ? (country.value||"") : (country.value||""), // always send
+            state:   wants80g ? (state.value||"")   : (state.value||""),
+            city:    wants80g ? (city.value||"")    : (city.value||""),
+            address: wants80g ? (address.value||"") : (address.value||""),
+            pin:     wants80g ? (pin.value||"")     : (pin.value||""),
+            message: document.getElementById("message").value || "",
+            anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
+            receipt: document.getElementById("receipt").checked ? "Yes" : "No",
+            status: "Verified",
+            verified: "Yes",
+            want_80G: wants80g ? "Yes" : "No"
+          })
+        }).then(() => console.log("✅ Sent to Make.com"))
+          .catch(err => console.error("❌ Make error:", err));
+
+      }).catch(err => {
+        otpFeedback.textContent = "Wrong OTP";
+        otpFeedback.style.color = "red";
+      });
     });
+
+    // Init Turnstile container (invisible)
+    // (div exists at bottom of body)
   </script>
 </body>
 </html>
