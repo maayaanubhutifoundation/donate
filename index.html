@@ -84,6 +84,12 @@
     /* Quotes placement: mobile top vs desktop right */
     #topQuotes{ color:#7846e4; font-size:.95rem; }
 
+    /* Tiny countdown badge */
+    .clock-badge{
+      display:inline-flex; align-items:center; gap:.25rem;
+      font-size:.85rem; padding:.125rem .5rem; border-radius:999px; background:#fff; border:1px solid #cbd5e1; color:#334155;
+    }
+
     /* Responsive */
     @media (max-width: 991.98px){
       .divider-lg{ border-left:none; border-top:1px solid #eee; margin-top:14px; padding-top:14px; }
@@ -166,12 +172,17 @@
             <div id="otpSection">
               <label for="otp" class="form-label">Enter OTP</label>
               <input type="text" id="otp" class="form-control mt-1" inputmode="numeric" maxlength="6"/>
+              <!-- tiny info line -->
+              <div id="otpSentInfo" class="text-muted small mt-1"></div>
+
               <div class="d-flex align-items-center gap-2 mt-2">
                 <button type="button" id="resendOtpBtn" class="btn btn-sm btn-outline-secondary" disabled>
-                  Resend OTP (60s)
+                  Resend OTP
                 </button>
-                <span id="resendCountdown" class="text-muted small"></span>
+                <span id="resendCountdown" class="clock-badge" aria-live="polite" style="display:none;">⏱️ 01:00</span>
+                <span id="resendHelp" class="text-muted small">You can request a new OTP if SMS is delayed.</span>
               </div>
+
               <div id="otpFeedback" class="fw-bold mt-2"></div>
             </div>
 
@@ -389,7 +400,7 @@
       navigator.clipboard.writeText(text).then(()=>alert("Copied: "+text));
     }
 
-    // Safe, no-navigation QR download (Blob) — avoids opening a new tab
+    // Safe, no-navigation QR download (Blob)
     async function downloadQR(){
       try{
         const img = document.getElementById('qrCodeImage');
@@ -423,10 +434,14 @@
     const otpFeedback = document.getElementById("otpFeedback");
     const authConfirmed = document.getElementById("authConfirmed");
     const donationOptions = document.getElementById("donationOptions");
+
+    // RESEND controls (NEW)
     const resendBtn = document.getElementById("resendOtpBtn");
     const resendCountdownEl = document.getElementById("resendCountdown");
+    const resendHelp = document.getElementById("resendHelp");
+    const otpSentInfo = document.getElementById("otpSentInfo");
     let resendTimer = null;
-    const RESEND_SECONDS = 60;
+    const RESEND_SECONDS = 60; // keep 60s gap
 
     // 80G controls
     const need80gYes = document.getElementById('need80gYes');
@@ -555,34 +570,39 @@
       if (otpInputEl.value.length === 6 && confirmationResult) submitBtn.click();
     });
 
-    // Resend OTP cooldown logic
+    // Helpers for resend
+    function mmss(n){ const m=String(Math.floor(n/60)).padStart(2,'0'); const s=String(n%60).padStart(2,'0'); return `${m}:${s}`; }
     function startResendCooldown() {
       let remaining = RESEND_SECONDS;
       resendBtn.disabled = true;
-      resendBtn.textContent = `Resend OTP (${remaining}s)`;
-      resendCountdownEl.textContent = "You can request a new OTP if SMS is delayed.";
+      resendCountdownEl.style.display = 'inline-flex';
+      resendCountdownEl.textContent = `⏱️ ${mmss(remaining)}`;
       if (resendTimer) clearInterval(resendTimer);
       resendTimer = setInterval(() => {
         remaining--;
-        resendBtn.textContent = `Resend OTP (${remaining}s)`;
+        resendCountdownEl.textContent = `⏱️ ${mmss(remaining)}`;
         if (remaining <= 0) {
           clearInterval(resendTimer);
           resendBtn.disabled = false;
-          resendBtn.textContent = "Resend OTP";
-          resendCountdownEl.textContent = "";
+          resendCountdownEl.style.display = 'none';
         }
       }, 1000);
     }
+    function maskPhoneForLine(raw10){ return (raw10 && raw10.length===10) ? "+91-XXXXXX"+raw10.slice(-4) : ""; }
 
     async function sendOtp(phone){
-      // Always create a fresh invisible verifier for each send (initial or resend)
+      // fresh invisible verifier per send
       window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
       await window.recaptchaVerifier.verify();
-      return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
+      const res = await firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
+      // tiny info line
+      const ten = phone.replace("+91","");
+      otpSentInfo.textContent = "OTP sent to " + maskPhoneForLine(ten);
+      return res;
     }
 
     // Submit handler
-    submitBtn.addEventListener("click", async () => {
+    submitBtn.addEventListener("click", () => {
       const mobileValue = document.getElementById("mobile").value;
       if (!/^([6-9])\d{9}$/.test(mobileValue)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
       if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
@@ -600,13 +620,18 @@
       if (!confirmationResult) {
         submitBtn.disabled = true; submitBtn.textContent = "Sending OTP...";
         try {
-          confirmationResult = await sendOtp(phone);
-          document.getElementById('otpSection').style.display = 'block'; // show now
-          otpInputEl.focus();
-          startResendCooldown();
-          submitBtn.disabled = false; submitBtn.textContent = "Submit OTP for Donation";
-        } catch (err) {
-          alert("Error sending OTP: " + err.message);
+          sendOtp(phone).then(result => {
+            confirmationResult = result;
+            document.getElementById('otpSection').style.display = 'block';
+            otpInputEl.focus();
+            startResendCooldown();
+            submitBtn.disabled = false; submitBtn.textContent = "Submit OTP for Donation";
+          }).catch(err => {
+            alert("Error sending OTP: " + err.message);
+            submitBtn.disabled = false; submitBtn.textContent = "Submit";
+          });
+        } catch (e) {
+          alert("Unexpected error. Please reload and try again.");
           submitBtn.disabled = false; submitBtn.textContent = "Submit";
         }
         return;
@@ -630,7 +655,7 @@
         const panVal = wants80g ? (panInput.value||'').toUpperCase() : '';
         const panType = panVal ? panVal.charAt(3) : '';
 
-        // Send to Make
+        // Send to Make (UNCHANGED URL & payload)
         fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -670,17 +695,19 @@
 
       const phone = "+91" + mobileValue;
       resendBtn.disabled = true;
+      const prevLabel = resendBtn.textContent;
       resendBtn.textContent = "Sending...";
       try {
-        confirmationResult = await sendOtp(phone); // replace with fresh confirmationResult
+        confirmationResult = await sendOtp(phone); // fresh confirmationResult
         otpFeedback.textContent = "OTP resent. Please check your SMS.";
         otpFeedback.style.color = "green";
+        resendBtn.textContent = prevLabel;
         startResendCooldown();
       } catch (err) {
         otpFeedback.textContent = "Failed to resend OTP: " + err.message;
         otpFeedback.style.color = "red";
         resendBtn.disabled = false;
-        resendBtn.textContent = "Resend OTP";
+        resendBtn.textContent = prevLabel;
       }
     });
   </script>
