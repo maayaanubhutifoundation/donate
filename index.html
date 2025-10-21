@@ -18,36 +18,37 @@
 
   <style>
     :root{ --maf-violet:#7846e4; --maf-accent:#ff9900; }
-
+    html,body{ font-size:18px; }
     body{ background-color: var(--maf-violet); padding:40px 10px; }
-    .page-wrap{ max-width: 1200px; margin: 0 auto; }
+    .page-wrap{ max-width: 1140px; margin: 0 auto; }
 
     /* Header band */
     .hero-card{
-      background:#fff; border-radius:12px; padding:24px; box-shadow:0 6px 20px rgba(0,0,0,.08);
+      background:#fff; border-radius:12px; padding:20px 24px; box-shadow:0 6px 20px rgba(0,0,0,.08);
     }
+    .brand-title{ color:#e68a00; margin:0 0 2px; font-weight:700; }
 
-    /* Two-column zone */
-    .split-wrap{ margin-top:16px; }
-    .about-col{
-      background:#fff; border-radius:12px; padding:24px; box-shadow:0 6px 20px rgba(0,0,0,.08);
-    }
-    .form-col .donation-card{
-      background:#fff; border-radius:12px; padding:20px; box-shadow:0 10px 28px rgba(0,0,0,.12);
-      width: 100%; max-width: 420px; margin-left: auto;
-    }
-
-    /* Quotes & ribbons */
     .ribbon{
-      color:var(--maf-violet); font-size:.92rem; font-weight:600;
+      color:var(--maf-violet); font-size:.95rem; font-weight:600;
       border-left:4px solid #007bff; padding-left:10px;
     }
 
-    /* Inputs */
+    /* Unified two-column card (same width as header) */
+    .unified-card{
+      background:#fff; border-radius:12px; box-shadow:0 10px 28px rgba(0,0,0,.12);
+      padding: 18px 18px; margin-top:14px;
+    }
+    .divider-lg{
+      border-left:1px solid #eee;
+    }
+
+    /* Form card look (inside unified card) */
+    .form-inner{ max-width: 560px; } /* gives the form visual weight (~60%) */
     .form-control, .form-select{
       border:2px solid var(--maf-violet) !important;
       border-radius:12px !important;
       box-shadow: inset 0 0 0 2px rgba(120,70,228,.08);
+      font-size:1rem;
     }
     .form-control:focus, .form-select:focus{
       border-color:#5129d6 !important;
@@ -57,15 +58,22 @@
 
     /* Floating labels */
     .form-floating > label{ padding-left:.9rem; color:#495057; }
-    .form-floating .form-control::placeholder{ color:transparent; } /* needed for floating */
-    .small-note{ font-size:.85rem; color:#555; }
+    .form-floating .form-control::placeholder{ color:transparent; }
+
+    /* Asterisk for required labels */
+    .req::after{
+      content:" *"; color:#d32f2f; font-weight:700;
+    }
+
+    /* Mobile with +91 */
+    .input-group-text{ font-weight:700; }
 
     /* Buttons */
     .btn-primary{ background-color: var(--maf-accent); border:none; }
     .btn-primary:hover{ background-color:#e68a00; }
 
     /* OTP box */
-    #otpSection{ margin-bottom:12px; background:#eef5ff; padding:12px; border-radius:8px; }
+    #otpSection{ margin-bottom:12px; background:#eef5ff; padding:12px; border-radius:8px; display:none; }
 
     /* Turnstile spacing */
     .cf-turnstile{ margin-top:8px; }
@@ -77,14 +85,22 @@
     }
     #donationOptions{ display:none; margin-top:20px; }
 
-    /* Hide 80G detail blocks initially (JS will open by default Yes) */
-    #undertakingWrap, #panWrap, #addrBlock{ display:none; }
+    /* 80G blocks default states (JS will open by default Yes) */
+    #panWrap, #addrBlock{ display:none; }
 
-    /* Mobile stacking order: form first */
+    /* Right column content */
+    .about-title{ color:var(--maf-violet); font-weight:700; }
+    .about-box p{ margin-bottom:.7rem; }
+    blockquote{
+      border-left:4px solid #eee; padding-left:.75rem; margin:.5rem 0; color:#333;
+      font-size:.95rem;
+    }
+
+    /* Responsive */
     @media (max-width: 991.98px){
-      .form-col{ order:1; }
-      .about-col{ order:2; margin-top:16px; }
-      .form-col .donation-card{ margin: 0 auto; }
+      .divider-lg{ border-left:none; border-top:1px solid #eee; margin-top:14px; padding-top:14px; }
+      .form-inner{ max-width: 100%; }
+      #otpSection{ display:block; } /* match earlier behaviour once OTP sent */
     }
   </style>
 </head>
@@ -92,12 +108,12 @@
 
   <div class="page-wrap">
 
-    <!-- Logo / Title / Intro -->
-    <div class="hero-card mb-3">
+    <!-- Header / Intro -->
+    <div class="hero-card">
       <div class="d-flex justify-content-between align-items-start">
         <div>
-          <h1 class="h3" style="color:#e68a00; margin:0 0 4px;">Support Maaya Anubhuti Foundation 💛</h1>
-          <p class="mb-2 small-note">
+          <h1 class="h3 brand-title">Support Maaya Anubhuti Foundation 💛</h1>
+          <p class="mb-2" style="color:#555; font-size:.95rem;">
             Your generous donation helps us care for the elderly, build a compassionate environment, and train youth to serve with dignity.
           </p>
         </div>
@@ -105,19 +121,14 @@
              alt="MAF Logo" style="height:56px; border-radius:6px;">
       </div>
 
-      <div class="ribbon mt-2">
-        <div><strong>YOUR CONTRIBUTIONS ARE ELIGIBLE FOR 50% TAX BENEFIT UNDER SECTION 80G</strong>.</div>
-        <div><strong>PAN: AATCM5136F &nbsp; | &nbsp; 80G URN: AATCM5136FF20251</strong>.</div>
-      </div>
-
       <!-- Quotes -->
-      <div class="mt-3 small-note" style="color:#333;">
+      <div class="mt-2" style="color:#333; font-size:.95rem;">
         <div><strong>“It's not how much we give but how much love we put into giving.”</strong> — Mother Teresa</div>
         <div><strong>“The best way to find yourself is to lose yourself in the service of others.”</strong> — Mahatma Gandhi</div>
         <div><strong>“We make a living by what we get, but we make a life by what we give.”</strong> — Winston Churchill</div>
       </div>
 
-      <!-- 80G toggle (requested placement: below quotes, above input block) -->
+      <!-- 80G toggle (requested placement) -->
       <div class="mt-3">
         <label class="form-label fw-semibold me-2">I require 80G Tax Exemption Certificate:</label>
         <div class="form-check form-check-inline">
@@ -128,152 +139,164 @@
           <input class="form-check-input" type="radio" name="need80g" id="need80gNo" value="no">
           <label class="form-check-label" for="need80gNo">No</label>
         </div>
+
+        <!-- Undertaking now directly under Yes/No -->
+        <div class="mt-2" id="undertakingWrap" style="display:none;">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="undertaking80g">
+            <label class="form-check-label req" for="undertaking80g">
+              I confirm my PAN and address are correct and consent to verification for 80G reporting.
+            </label>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Two-column area -->
-    <div class="row split-wrap g-3">
-      <!-- RIGHT: Donation Form (first on mobile) -->
-      <div class="col-12 col-lg-5 form-col">
-        <form id="donationForm" class="donation-card">
+    <!-- Unified two-column card -->
+    <div class="unified-card">
+      <div class="row g-3 align-items-start">
+        <!-- LEFT (60%): Form -->
+        <div class="col-12 col-lg-7">
+          <form id="donationForm" class="form-inner">
 
-          <!-- Undertaking (visible when Yes) -->
-          <div class="mb-3" id="undertakingWrap">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="undertaking80g">
-              <label class="form-check-label" for="undertaking80g">
-                <strong>I confirm my PAN and address are correct and consent to verification for 80G reporting.</strong>
+            <!-- Name (floating; dynamic label/asterisk) -->
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="name" placeholder="Name as per PAN" required>
+              <label for="name" id="nameLabel" class="req">Name as per PAN</label>
+            </div>
+
+            <!-- Mobile with +91 -->
+            <div class="mb-3">
+              <label class="form-label req">Mobile Number</label>
+              <div class="input-group">
+                <span class="input-group-text">+91</span>
+                <input type="tel" class="form-control" id="mobile" pattern="[0-9]{10}" placeholder="10-digit number" required>
+              </div>
+            </div>
+
+            <!-- OTP box (appears after OTP is sent) -->
+            <div id="otpSection">
+              <label for="otp" class="form-label">Enter OTP</label>
+              <input type="text" id="otp" class="form-control mt-1" inputmode="numeric" maxlength="6"/>
+              <div id="otpFeedback" class="fw-bold mt-2"></div>
+            </div>
+
+            <!-- Email -->
+            <div class="form-floating mb-3">
+              <input type="email" class="form-control" id="email" placeholder="Email (Optional)">
+              <label for="email">Email (Optional)</label>
+            </div>
+
+            <!-- PAN -->
+            <div class="form-floating mb-2" id="panWrap">
+              <input type="text" class="form-control" id="pan" placeholder="ABCDE1234F" style="text-transform:uppercase;" maxlength="10">
+              <label for="pan" id="panLabel" class="req">PAN (Required for 80G receipt)</label>
+            </div>
+            <div class="mb-3" id="panHint" style="font-size:.9rem; color:#555;"></div>
+
+            <!-- Address segmented -->
+            <div id="addrBlock">
+              <div class="form-floating mb-3">
+                <select class="form-select" id="country">
+                  <option value="">Select Country</option>
+                  <option value="India" selected>India</option>
+                </select>
+                <label for="country" id="countryLabel" class="req">Country</label>
+              </div>
+
+              <div class="form-floating mb-3">
+                <select class="form-select" id="state">
+                  <option value="">Select State</option>
+                  <!-- States & UTs -->
+                  <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option>
+                  <option>Bihar</option><option>Chhattisgarh</option><option>Goa</option><option>Gujarat</option>
+                  <option>Haryana</option><option>Himachal Pradesh</option><option>Jharkhand</option>
+                  <option>Karnataka</option><option>Kerala</option><option>Madhya Pradesh</option>
+                  <option>Maharashtra</option><option>Manipur</option><option>Meghalaya</option>
+                  <option>Mizoram</option><option>Nagaland</option><option>Odisha</option>
+                  <option>Punjab</option><option>Rajasthan</option><option>Sikkim</option>
+                  <option>Tamil Nadu</option><option>Telangana</option><option>Tripura</option>
+                  <option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option>
+                  <option>Andaman and Nicobar Islands</option><option>Chandigarh</option>
+                  <option>Dadra and Nagar Haveli and Daman and Diu</option><option>Delhi</option>
+                  <option>Jammu and Kashmir</option><option>Ladakh</option><option>Lakshadweep</option>
+                  <option>Puducherry</option>
+                </select>
+                <label for="state" id="stateLabel" class="req">State</label>
+              </div>
+
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="city" placeholder="City">
+                <label for="city" id="cityLabel" class="req">City</label>
+              </div>
+
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="address" placeholder="House/Colony/Street">
+                <label for="address" id="addressLabel" class="req">Address (HN/Colony/Street)</label>
+              </div>
+
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="pin" placeholder="PIN" inputmode="numeric" maxlength="6">
+                <label for="pin" id="pinLabel" class="req">PIN</label>
+              </div>
+            </div>
+
+            <!-- Message -->
+            <div class="form-floating mb-3">
+              <textarea class="form-control" id="message" placeholder="Message (Optional)" style="height: 80px"></textarea>
+              <label for="message">Message (Optional)</label>
+            </div>
+
+            <!-- Instruction -->
+            <div class="mb-2 ribbon" style="border-left-color:#007bff;">
+              Authenticate your mobile number by pressing <strong>Submit</strong> to reveal QR, UPI and bank details.
+            </div>
+
+            <!-- Consents -->
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="declaration" required>
+              <label class="form-check-label req" for="declaration">
+                I hereby declare I am an Indian citizen
+                <span id="more" style="display:none;"> donating my own funds. I consent to contact via WhatsApp/email/SMS for donation updates and receipts.</span>
+                <button type="button" id="readToggle" class="btn btn-link p-0" style="font-size:.85rem;">Read More</button>
               </label>
             </div>
-          </div>
 
-          <!-- Name (floating; text changes with toggle) -->
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="name" placeholder="Name as per PAN" required>
-            <label for="name" id="nameLabel">Name as per PAN*</label>
-          </div>
-
-          <!-- Mobile with +91 -->
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Mobile Number*</label>
-            <div class="input-group">
-              <span class="input-group-text fw-bold">+91</span>
-              <input type="tel" class="form-control" id="mobile" pattern="[0-9]{10}" placeholder="10-digit number" required>
-            </div>
-          </div>
-
-          <!-- OTP box (unchanged) -->
-          <div id="otpSection" class="d-none">
-            <label for="otp" class="form-label">Enter OTP:</label>
-            <input type="text" id="otp" class="form-control mt-1" inputmode="numeric" maxlength="6" />
-            <div id="otpFeedback" class="fw-bold mt-2"></div>
-          </div>
-
-          <!-- Email -->
-          <div class="form-floating mb-3">
-            <input type="email" class="form-control" id="email" placeholder="Email (Optional)">
-            <label for="email">Email (Optional)</label>
-          </div>
-
-          <!-- PAN (floating; shown when Yes) -->
-          <div class="form-floating mb-2" id="panWrap">
-            <input type="text" class="form-control" id="pan" placeholder="ABCDE1234F"
-                   style="text-transform:uppercase;" maxlength="10">
-            <label for="pan">PAN (Required for 80G receipt)</label>
-          </div>
-          <div class="small-note mb-3" id="panHint"></div>
-
-          <!-- Address block (segmented) -->
-          <div id="addrBlock">
-            <div class="form-floating mb-3">
-              <select class="form-select" id="country">
-                <option value="">Select Country</option>
-                <option value="India" selected>India</option>
-              </select>
-              <label for="country">Country</label>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="anonymous">
+              <label class="form-check-label" for="anonymous">I opt to remain anonymous and not have my name published on the website.</label>
             </div>
 
-            <div class="form-floating mb-3">
-              <select class="form-select" id="state">
-                <option value="">Select State</option>
-                <!-- Indian States & UTs -->
-                <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option>
-                <option>Bihar</option><option>Chhattisgarh</option><option>Goa</option><option>Gujarat</option>
-                <option>Haryana</option><option>Himachal Pradesh</option><option>Jharkhand</option>
-                <option>Karnataka</option><option>Kerala</option><option>Madhya Pradesh</option>
-                <option>Maharashtra</option><option>Manipur</option><option>Meghalaya</option>
-                <option>Mizoram</option><option>Nagaland</option><option>Odisha</option>
-                <option>Punjab</option><option>Rajasthan</option><option>Sikkim</option>
-                <option>Tamil Nadu</option><option>Telangana</option><option>Tripura</option>
-                <option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option>
-                <option>Andaman and Nicobar Islands</option><option>Chandigarh</option>
-                <option>Dadra and Nagar Haveli and Daman and Diu</option><option>Delhi</option>
-                <option>Jammu and Kashmir</option><option>Ladakh</option><option>Lakshadweep</option>
-                <option>Puducherry</option>
-              </select>
-              <label for="state">State</label>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="receipt">
+              <label class="form-check-label" for="receipt">I would like to receive the receipt via WhatsApp/email.</label>
             </div>
 
-            <div class="form-floating mb-3">
-              <input type="text" class="form-control" id="city" placeholder="City">
-              <label for="city">City</label>
+            <div class="cf-turnstile" data-sitekey="0x4AAAAAABnuBDDS5ho0ShrZ"></div>
+            <button type="button" class="btn btn-primary w-100 mt-2" id="submitBtn">Submit</button>
+          </form>
+        </div>
+
+        <!-- RIGHT (40%): Text / Tax note / Quotes / FAQ -->
+        <div class="col-12 col-lg-5 about-box divider-lg">
+          <h2 class="h5 about-title">About your contribution</h2>
+          <p>Your support nourishes underprivileged elders with meals and clothing today, and builds the foundation for our eco-friendly senior living centre tomorrow.</p>
+
+          <div class="mt-3">
+            <div class="ribbon" style="border-left-color:#ddd; color:#222;">
+              <div><strong>YOUR CONTRIBUTIONS ARE ELIGIBLE FOR 50% TAX BENEFIT UNDER SECTION 80G.</strong></div>
+              <div>PAN: <strong>AATCM5136F</strong> &nbsp; | &nbsp; 80G URN: <strong>AATCM5136FF20251</strong></div>
             </div>
 
-            <div class="form-floating mb-3">
-              <input type="text" class="form-control" id="address" placeholder="House/Colony/Street">
-              <label for="address">Address (HN/Colony/Street)</label>
-            </div>
+            <blockquote>“It's not how much we give but how much love we put into giving.” — Mother Teresa</blockquote>
+            <blockquote>“The best way to find yourself is to lose yourself in the service of others.” — Mahatma Gandhi</blockquote>
+            <blockquote>“We make a living by what we get, but we make a life by what we give.” — Winston Churchill</blockquote>
 
-            <div class="form-floating mb-3">
-              <input type="text" class="form-control" id="pin" placeholder="PIN" inputmode="numeric" maxlength="6">
-              <label for="pin">PIN</label>
-            </div>
+            <p class="mt-3 mb-0">
+              👉 For tax-benefit details, see our <a href="https://www.maayaanubhuti.org/support" target="_blank">Donation FAQ</a>.
+            </p>
           </div>
-
-          <div class="form-floating mb-3">
-            <textarea class="form-control" id="message" placeholder="Message (Optional)" style="height: 80px"></textarea>
-            <label for="message">Message (Optional)</label>
-          </div>
-
-          <div class="small-note mb-2 ribbon" style="border-left-color:#007bff;">
-            Authenticate your mobile number by pressing <strong>Submit</strong> to reveal QR, UPI and bank details.
-          </div>
-
-          <!-- Consents -->
-          <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" id="declaration" required>
-            <label class="form-check-label" for="declaration">
-              I hereby declare I am an Indian citizen
-              <span id="more" style="display:none;"> donating my own funds. I consent to contact via WhatsApp/email/SMS for donation updates and receipts.</span>
-              <button type="button" id="readToggle" class="btn btn-link p-0" style="font-size:13px;">Read More</button>
-            </label>
-          </div>
-
-          <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" id="anonymous">
-            <label class="form-check-label" for="anonymous">I opt to remain anonymous and not have my name published on the website.</label>
-          </div>
-
-          <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" id="receipt">
-            <label class="form-check-label" for="receipt">I would like to receive the receipt via WhatsApp/email.</label>
-          </div>
-
-          <div class="cf-turnstile" data-sitekey="0x4AAAAAABnuBDDS5ho0ShrZ"></div>
-          <button type="button" class="btn btn-primary w-100 mt-2" id="submitBtn">Submit</button>
-        </form>
-      </div>
-
-      <!-- LEFT: About + FAQ link -->
-      <div class="col-12 col-lg-7 about-col">
-        <h2 class="h5" style="color:var(--maf-violet);">About your contribution</h2>
-        <p class="mb-3">
-          Your support nourishes underprivileged elders with meals and clothing today, and builds the foundation for our
-          eco-friendly senior living centre tomorrow. Thank you for standing with dignity, care, and hope.
-        </p>
-        <p class="mb-0">
-          👉 For tax-benefit details, see our <a href="https://www.maayaanubhuti.org/support" target="_blank">Donation FAQ</a>.
-        </p>
+        </div>
       </div>
     </div>
 
@@ -291,7 +314,7 @@
               <img id="qrCodeImage" src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=384,h=448,fit=crop/A0xj3j1bO7C10DBz/qr_code-m6Lb0BlRRqs7MEGd.png" alt="QR" class="img-fluid" style="max-width:120px;">
               <br>
               <button onclick="downloadQR()" class="btn btn-sm btn-outline-primary mt-2">Download QR Code</button>
-              <small class="d-block mt-1 text-muted" style="font-size:.8rem;">To use this QR on the same phone, download it and then upload it from your gallery in your UPI app.</small>
+              <small class="d-block mt-1 text-muted" style="font-size:.85rem;">To use this QR on the same phone, download it and then upload it from your UPI app.</small>
             </div>
           </div>
         </div>
@@ -348,7 +371,7 @@
   <div id="recaptcha-container" style="display:none;"></div>
 
   <script>
-    // Toggle "Read more"
+    // Read more toggle
     document.getElementById("readToggle").addEventListener("click", () => {
       const more = document.getElementById("more");
       const btn  = document.getElementById("readToggle");
@@ -368,7 +391,7 @@
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
-    // Firebase (unchanged config)
+    // Firebase (unchanged)
     const firebaseConfig = {
       apiKey: "AIzaSyAG6BcfLCiBG4nX2dqa0YDCqtbgiET4qQg",
       authDomain: "maaya-donation-project.firebaseapp.com",
@@ -450,36 +473,48 @@
     nameInput.addEventListener('input', validatePAN);
 
     function setReq(el, on){ if(!el) return; on ? el.setAttribute('required','required') : el.removeAttribute('required'); }
+    function markLabel(labelEl, on){
+      if(!labelEl) return;
+      labelEl.classList.toggle('req', !!on);
+    }
     function toggleAddrRequired(on){
       setReq(country,on); setReq(state,on); setReq(city,on); setReq(address,on); setReq(pin,on);
+      markLabel(document.getElementById('countryLabel'), on);
+      markLabel(document.getElementById('stateLabel'), on);
+      markLabel(document.getElementById('cityLabel'), on);
+      markLabel(document.getElementById('addressLabel'), on);
+      markLabel(document.getElementById('pinLabel'), on);
     }
 
     function toggle80G(){
       const need = need80gValue()==='yes';
-      undertakingWrap.style.display = need ? 'block' : 'none';
-      panWrap.style.display = need ? 'block' : 'none';
-      document.getElementById('addrBlock').style.display = need ? 'block' : 'block'; // always visible per spec
 
+      undertakingWrap.style.display = need ? 'block' : 'none';
       setReq(undertaking80g, need);
+      markLabel(document.querySelector('label[for="undertaking80g"]'), need);
+
+      panWrap.style.display = need ? 'block' : 'none';
       setReq(panInput, need);
+      markLabel(document.getElementById('panLabel'), need);
+
+      document.getElementById('addrBlock').style.display = 'block'; // always visible
       toggleAddrRequired(need);
 
-      nameLabel.textContent = need ? 'Name as per PAN*' : 'Full Name*';
-
+      nameLabel.textContent = need ? 'Name as per PAN' : 'Full Name';
+      markLabel(nameLabel, true); // Name always required
       if(!need){
         undertaking80g.checked = false;
         panInput.value=''; panInput.setCustomValidity(''); panHint.textContent='';
       }
     }
-    need80gYes.addEventListener('change', toggle80G);
-    need80gNo .addEventListener('change', toggle80G);
+    document.getElementById('need80gYes').addEventListener('change', toggle80G);
+    document.getElementById('need80gNo').addEventListener('change', toggle80G);
     toggle80G(); // initialize (default Yes)
 
-    // PIN & simple address validation helpers
+    // Simple address check when needed
     function validateAddressIfNeeded(){
       const need = need80gValue()==='yes';
       if(!need) return true;
-
       if(!country.value) { country.focus(); return false; }
       if(!state.value)   { state.focus();   return false; }
       if(!city.value.trim()) { city.focus(); return false; }
@@ -488,19 +523,25 @@
       return true;
     }
 
-    // OTP auto flow
-    if (otpInputEl){
-      otpInputEl.addEventListener("input", () => {
-        if (otpInputEl.value.length === 6 && confirmationResult) submitBtn.click();
-      });
-    }
+    // Read more / OTP helpers
+    const readBtn = document.getElementById("readToggle");
+    readBtn.addEventListener("click", () => {
+      const more = document.getElementById("more");
+      const show = more.style.display === "none";
+      more.style.display = show ? "inline" : "none";
+      readBtn.textContent = show ? "Read Less" : "Read More";
+    });
 
+    otpInputEl && otpInputEl.addEventListener("input", () => {
+      if (otpInputEl.value.length === 6 && confirmationResult) submitBtn.click();
+    });
+
+    // Submit handler
     submitBtn.addEventListener("click", () => {
       const mobileValue = document.getElementById("mobile").value;
       if (!/^([6-9])\d{9}$/.test(mobileValue)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
       if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
 
-      // 80G gates
       if(need80gValue()==='yes'){
         if(!undertaking80g.checked) return alert("Please confirm the 80G undertaking.");
         validatePAN();
@@ -519,7 +560,7 @@
             return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
           }).then(result => {
             confirmationResult = result;
-            otpSection.classList.remove("d-none");
+            document.getElementById('otpSection').style.display = 'block';
             otpInputEl.focus();
             submitBtn.disabled = false; submitBtn.textContent = "Submit OTP for Donation";
           }).catch(err => {
@@ -533,7 +574,7 @@
         return;
       }
 
-      // Confirm OTP and then reveal options + send to Make
+      // Confirm OTP then reveal options + send to Make
       confirmationResult.confirm(otpInputEl.value).then(() => {
         authConfirmed.style.display = "block";
         donationForm.style.display = "none";
@@ -543,7 +584,6 @@
         const panVal = wants80g ? (panInput.value||'').toUpperCase() : '';
         const panType = panVal ? panVal.charAt(3) : '';
 
-        // Payload to Make.com (adds new columns)
         fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -553,12 +593,12 @@
             phone: document.getElementById("mobile").value,
             email: document.getElementById("email").value || "",
             pan: panVal,
-            PAN_Type: panType,                      // NEW
-            country: wants80g ? (country.value||"") : (country.value||""), // always send
-            state:   wants80g ? (state.value||"")   : (state.value||""),
-            city:    wants80g ? (city.value||"")    : (city.value||""),
-            address: wants80g ? (address.value||"") : (address.value||""),
-            pin:     wants80g ? (pin.value||"")     : (pin.value||""),
+            PAN_Type: panType,
+            country: country.value || "",
+            state:   state.value   || "",
+            city:    city.value    || "",
+            address: address.value || "",
+            pin:     pin.value     || "",
             message: document.getElementById("message").value || "",
             anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
             receipt: document.getElementById("receipt").checked ? "Yes" : "No",
@@ -574,9 +614,8 @@
         otpFeedback.style.color = "red";
       });
     });
-
-    // Init Turnstile container (invisible)
-    // (div exists at bottom of body)
   </script>
+
+  <div id="recaptcha-container" style="display:none;"></div>
 </body>
 </html>
