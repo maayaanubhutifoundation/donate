@@ -22,28 +22,24 @@
     body{ background-color: var(--maf-violet); padding:40px 10px; }
     .page-wrap{ max-width: 1140px; margin: 0 auto; }
 
-    /* Header band */
+    /* Header */
     .hero-card{
       background:#fff; border-radius:12px; padding:20px 24px; box-shadow:0 6px 20px rgba(0,0,0,.08);
     }
     .brand-title{ color:#e68a00; margin:0 0 2px; font-weight:700; }
 
-    .ribbon{
-      color:var(--maf-violet); font-size:.95rem; font-weight:600;
-      border-left:4px solid #007bff; padding-left:10px;
-    }
+    /* 80G row id (to hide post-auth) */
+    #need80gRow .form-check{ margin-right:10px; }
 
-    /* Unified two-column card (same width as header) */
+    /* Unified two-column card */
     .unified-card{
       background:#fff; border-radius:12px; box-shadow:0 10px 28px rgba(0,0,0,.12);
-      padding: 18px 18px; margin-top:14px;
+      padding: 18px; margin-top:14px;
     }
-    .divider-lg{
-      border-left:1px solid #eee;
-    }
+    .divider-lg{ border-left:1px solid #eee; }
 
-    /* Form card look (inside unified card) */
-    .form-inner{ max-width: 560px; } /* gives the form visual weight (~60%) */
+    /* Form looks */
+    .form-inner{ max-width: 560px; }
     .form-control, .form-select{
       border:2px solid var(--maf-violet) !important;
       border-radius:12px !important;
@@ -55,52 +51,43 @@
       box-shadow:0 0 0 4px rgba(120,70,228,.20), inset 0 0 0 2px rgba(120,70,228,.08);
       outline:none;
     }
-
-    /* Floating labels */
     .form-floating > label{ padding-left:.9rem; color:#495057; }
     .form-floating .form-control::placeholder{ color:transparent; }
 
     /* Asterisk for required labels */
-    .req::after{
-      content:" *"; color:#d32f2f; font-weight:700;
-    }
+    .req::after{ content:" *"; color:#d32f2f; font-weight:700; }
 
-    /* Mobile with +91 */
     .input-group-text{ font-weight:700; }
 
-    /* Buttons */
     .btn-primary{ background-color: var(--maf-accent); border:none; }
     .btn-primary:hover{ background-color:#e68a00; }
 
-    /* OTP box */
-    #otpSection{ margin-bottom:12px; background:#eef5ff; padding:12px; border-radius:8px; display:none; }
+    /* OTP hidden until started */
+    #otpSection{ display:none; margin-bottom:12px; background:#eef5ff; padding:12px; border-radius:8px; }
 
-    /* Turnstile spacing */
     .cf-turnstile{ margin-top:8px; }
 
-    /* Success band */
     #authConfirmed{
       display:none; margin-top:20px; padding:12px;
       background:#e8f8ec; border-left:5px solid green; color:#155724; font-weight:700;
     }
     #donationOptions{ display:none; margin-top:20px; }
 
-    /* 80G blocks default states (JS will open by default Yes) */
-    #panWrap, #addrBlock{ display:none; }
-
-    /* Right column content */
+    /* Right column */
     .about-title{ color:var(--maf-violet); font-weight:700; }
     .about-box p{ margin-bottom:.7rem; }
-    blockquote{
-      border-left:4px solid #eee; padding-left:.75rem; margin:.5rem 0; color:#333;
-      font-size:.95rem;
-    }
+    blockquote{ border-left:4px solid #eee; padding-left:.75rem; margin:.5rem 0; font-size:.95rem; color:#7846e4; }
+
+    /* Ribbons */
+    .ribbon{ color:var(--maf-violet); font-size:.95rem; font-weight:600; border-left:4px solid #007bff; padding-left:10px; }
+
+    /* Quotes placement: mobile top vs desktop right */
+    #topQuotes{ color:#7846e4; font-size:.95rem; }
 
     /* Responsive */
     @media (max-width: 991.98px){
       .divider-lg{ border-left:none; border-top:1px solid #eee; margin-top:14px; padding-top:14px; }
-      .form-inner{ max-width: 100%; }
-      #otpSection{ display:block; } /* match earlier behaviour once OTP sent */
+      .form-inner{ max-width:100%; }
     }
   </style>
 </head>
@@ -121,15 +108,15 @@
              alt="MAF Logo" style="height:56px; border-radius:6px;">
       </div>
 
-      <!-- Quotes -->
-      <div class="mt-2" style="color:#333; font-size:.95rem;">
+      <!-- TOP QUOTES (mobile only) -->
+      <div id="topQuotes" class="mt-2 d-lg-none">
         <div><strong>“It's not how much we give but how much love we put into giving.”</strong> — Mother Teresa</div>
         <div><strong>“The best way to find yourself is to lose yourself in the service of others.”</strong> — Mahatma Gandhi</div>
         <div><strong>“We make a living by what we get, but we make a life by what we give.”</strong> — Winston Churchill</div>
       </div>
 
-      <!-- 80G toggle (requested placement) -->
-      <div class="mt-3">
+      <!-- 80G toggle row -->
+      <div class="mt-3" id="need80gRow">
         <label class="form-label fw-semibold me-2">I require 80G Tax Exemption Certificate:</label>
         <div class="form-check form-check-inline">
           <input class="form-check-input" type="radio" name="need80g" id="need80gYes" value="yes" checked>
@@ -140,7 +127,7 @@
           <label class="form-check-label" for="need80gNo">No</label>
         </div>
 
-        <!-- Undertaking now directly under Yes/No -->
+        <!-- Undertaking directly beneath (shows when Yes) -->
         <div class="mt-2" id="undertakingWrap" style="display:none;">
           <div class="form-check">
             <input class="form-check-input" type="checkbox" id="undertaking80g">
@@ -159,13 +146,14 @@
         <div class="col-12 col-lg-7">
           <form id="donationForm" class="form-inner">
 
-            <!-- Name (floating; dynamic label/asterisk) -->
+            <!-- Name -->
             <div class="form-floating mb-3">
-              <input type="text" class="form-control" id="name" placeholder="Name as per PAN" required>
+              <input type="text" class="form-control" id="name" placeholder="Name as per PAN"
+                     style="text-transform:uppercase;" autocomplete="name" required>
               <label for="name" id="nameLabel" class="req">Name as per PAN</label>
             </div>
 
-            <!-- Mobile with +91 -->
+            <!-- Mobile -->
             <div class="mb-3">
               <label class="form-label req">Mobile Number</label>
               <div class="input-group">
@@ -174,7 +162,7 @@
               </div>
             </div>
 
-            <!-- OTP box (appears after OTP is sent) -->
+            <!-- OTP (appears after OTP is sent) -->
             <div id="otpSection">
               <label for="otp" class="form-label">Enter OTP</label>
               <input type="text" id="otp" class="form-control mt-1" inputmode="numeric" maxlength="6"/>
@@ -183,13 +171,15 @@
 
             <!-- Email -->
             <div class="form-floating mb-3">
-              <input type="email" class="form-control" id="email" placeholder="Email (Optional)">
+              <input type="email" class="form-control" id="email" placeholder="Email (Optional)"
+                     autocomplete="email" pattern="^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$">
               <label for="email">Email (Optional)</label>
             </div>
 
             <!-- PAN -->
             <div class="form-floating mb-2" id="panWrap">
-              <input type="text" class="form-control" id="pan" placeholder="ABCDE1234F" style="text-transform:uppercase;" maxlength="10">
+              <input type="text" class="form-control" id="pan" placeholder="ABCDE1234F"
+                     style="text-transform:uppercase;" maxlength="10">
               <label for="pan" id="panLabel" class="req">PAN (Required for 80G receipt)</label>
             </div>
             <div class="mb-3" id="panHint" style="font-size:.9rem; color:#555;"></div>
@@ -226,12 +216,14 @@
               </div>
 
               <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="city" placeholder="City">
+                <input type="text" class="form-control" id="city" placeholder="City"
+                       style="text-transform:uppercase;" autocomplete="address-level2">
                 <label for="city" id="cityLabel" class="req">City</label>
               </div>
 
               <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="address" placeholder="House/Colony/Street">
+                <input type="text" class="form-control" id="address" placeholder="House/Colony/Street"
+                       style="text-transform:uppercase;" autocomplete="street-address">
                 <label for="address" id="addressLabel" class="req">Address (HN/Colony/Street)</label>
               </div>
 
@@ -264,7 +256,10 @@
 
             <div class="form-check mb-2">
               <input class="form-check-input" type="checkbox" id="anonymous">
-              <label class="form-check-label" for="anonymous">I opt to remain anonymous and not have my name published on the website.</label>
+              <label class="form-check-label" for="anonymous">
+                I opt to remain anonymous and not have my name published on the website,
+                but I am aware that if I opt for 80G, my details will be reported to the Income Tax Department (Form 10BD/10BE).
+              </label>
             </div>
 
             <div class="form-check mb-2">
@@ -288,9 +283,12 @@
               <div>PAN: <strong>AATCM5136F</strong> &nbsp; | &nbsp; 80G URN: <strong>AATCM5136FF20251</strong></div>
             </div>
 
-            <blockquote>“It's not how much we give but how much love we put into giving.” — Mother Teresa</blockquote>
-            <blockquote>“The best way to find yourself is to lose yourself in the service of others.” — Mahatma Gandhi</blockquote>
-            <blockquote>“We make a living by what we get, but we make a life by what we give.” — Winston Churchill</blockquote>
+            <!-- Right-column quotes (desktop only) -->
+            <div class="d-none d-lg-block">
+              <blockquote>“It's not how much we give but how much love we put into giving.” — Mother Teresa</blockquote>
+              <blockquote>“The best way to find yourself is to lose yourself in the service of others.” — Mahatma Gandhi</blockquote>
+              <blockquote>“We make a living by what we get, but we make a life by what we give.” — Winston Churchill</blockquote>
+            </div>
 
             <p class="mt-3 mb-0">
               👉 For tax-benefit details, see our <a href="https://www.maayaanubhuti.org/support" target="_blank">Donation FAQ</a>.
@@ -430,6 +428,18 @@
     const address = document.getElementById('address');
     const pin     = document.getElementById('pin');
 
+    // Email -> lowercase
+    document.getElementById('email').addEventListener('input', function(){
+      this.value = (this.value || '').toLowerCase();
+    });
+
+    // Force UPPERCASE also via JS (mobile keyboards)
+    ['name','pan','city','address'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.addEventListener('input', ()=>{ el.value = (el.value||'').toUpperCase(); });
+    });
+
     function need80gValue(){
       const r = document.querySelector('input[name="need80g"]:checked');
       return r ? r.value : 'yes';
@@ -473,10 +483,7 @@
     nameInput.addEventListener('input', validatePAN);
 
     function setReq(el, on){ if(!el) return; on ? el.setAttribute('required','required') : el.removeAttribute('required'); }
-    function markLabel(labelEl, on){
-      if(!labelEl) return;
-      labelEl.classList.toggle('req', !!on);
-    }
+    function markLabel(labelEl, on){ if(!labelEl) return; labelEl.classList.toggle('req', !!on); }
     function toggleAddrRequired(on){
       setReq(country,on); setReq(state,on); setReq(city,on); setReq(address,on); setReq(pin,on);
       markLabel(document.getElementById('countryLabel'), on);
@@ -502,6 +509,7 @@
 
       nameLabel.textContent = need ? 'Name as per PAN' : 'Full Name';
       markLabel(nameLabel, true); // Name always required
+
       if(!need){
         undertaking80g.checked = false;
         panInput.value=''; panInput.setCustomValidity(''); panHint.textContent='';
@@ -511,7 +519,7 @@
     document.getElementById('need80gNo').addEventListener('change', toggle80G);
     toggle80G(); // initialize (default Yes)
 
-    // Simple address check when needed
+    // Validate address when needed
     function validateAddressIfNeeded(){
       const need = need80gValue()==='yes';
       if(!need) return true;
@@ -523,15 +531,15 @@
       return true;
     }
 
-    // Read more / OTP helpers
-    const readBtn = document.getElementById("readToggle");
-    readBtn.addEventListener("click", () => {
+    // Read more toggle
+    document.getElementById("readToggle").addEventListener("click", () => {
       const more = document.getElementById("more");
       const show = more.style.display === "none";
       more.style.display = show ? "inline" : "none";
-      readBtn.textContent = show ? "Read Less" : "Read More";
+      document.getElementById("readToggle").textContent = show ? "Read Less" : "Read More";
     });
 
+    // Auto-submit on full OTP typed (only after OTP exists)
     otpInputEl && otpInputEl.addEventListener("input", () => {
       if (otpInputEl.value.length === 6 && confirmationResult) submitBtn.click();
     });
@@ -560,7 +568,7 @@
             return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
           }).then(result => {
             confirmationResult = result;
-            document.getElementById('otpSection').style.display = 'block';
+            document.getElementById('otpSection').style.display = 'block'; // show now
             otpInputEl.focus();
             submitBtn.disabled = false; submitBtn.textContent = "Submit OTP for Donation";
           }).catch(err => {
@@ -577,13 +585,22 @@
       // Confirm OTP then reveal options + send to Make
       confirmationResult.confirm(otpInputEl.value).then(() => {
         authConfirmed.style.display = "block";
-        donationForm.style.display = "none";
+
+        // Hide 80G row + undertaking post-auth
+        document.getElementById('undertakingWrap').style.display = 'none';
+        document.getElementById('need80gRow').style.display = 'none';
+
+        // Collapse the two-column card so Donation Options move up
+        const uniCard = document.querySelector('.unified-card');
+        if (uniCard) uniCard.style.display = 'none';
+
         donationOptions.style.display = "block";
 
         const wants80g = (need80gValue()==='yes');
         const panVal = wants80g ? (panInput.value||'').toUpperCase() : '';
         const panType = panVal ? panVal.charAt(3) : '';
 
+        // Send to Make
         fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
