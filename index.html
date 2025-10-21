@@ -166,6 +166,12 @@
             <div id="otpSection">
               <label for="otp" class="form-label">Enter OTP</label>
               <input type="text" id="otp" class="form-control mt-1" inputmode="numeric" maxlength="6"/>
+              <div class="d-flex align-items-center gap-2 mt-2">
+                <button type="button" id="resendOtpBtn" class="btn btn-sm btn-outline-secondary" disabled>
+                  Resend OTP (60s)
+                </button>
+                <span id="resendCountdown" class="text-muted small"></span>
+              </div>
               <div id="otpFeedback" class="fw-bold mt-2"></div>
             </div>
 
@@ -382,11 +388,21 @@
       const text=document.getElementById(id).innerText;
       navigator.clipboard.writeText(text).then(()=>alert("Copied: "+text));
     }
-    function downloadQR(){
-      const link=document.createElement('a');
-      link.href=document.getElementById('qrCodeImage').src;
-      link.download='MAF_QR_Code.png';
-      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+
+    // Safe, no-navigation QR download (Blob) — avoids opening a new tab
+    async function downloadQR(){
+      try{
+        const img = document.getElementById('qrCodeImage');
+        const resp = await fetch(img.src, {mode:'cors'});
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const link=document.createElement('a');
+        link.href=url; link.download='MAF_QR_Code.png';
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }catch(e){
+        alert("Unable to download QR. Please long-press and save the image.");
+      }
     }
 
     // Firebase (unchanged)
@@ -406,8 +422,11 @@
     const otpInputEl = document.getElementById("otp");
     const otpFeedback = document.getElementById("otpFeedback");
     const authConfirmed = document.getElementById("authConfirmed");
-    const donationForm = document.getElementById("donationForm");
     const donationOptions = document.getElementById("donationOptions");
+    const resendBtn = document.getElementById("resendOtpBtn");
+    const resendCountdownEl = document.getElementById("resendCountdown");
+    let resendTimer = null;
+    const RESEND_SECONDS = 60;
 
     // 80G controls
     const need80gYes = document.getElementById('need80gYes');
@@ -531,21 +550,39 @@
       return true;
     }
 
-    // Read more toggle
-    document.getElementById("readToggle").addEventListener("click", () => {
-      const more = document.getElementById("more");
-      const show = more.style.display === "none";
-      more.style.display = show ? "inline" : "none";
-      document.getElementById("readToggle").textContent = show ? "Read Less" : "Read More";
-    });
-
     // Auto-submit on full OTP typed (only after OTP exists)
     otpInputEl && otpInputEl.addEventListener("input", () => {
       if (otpInputEl.value.length === 6 && confirmationResult) submitBtn.click();
     });
 
+    // Resend OTP cooldown logic
+    function startResendCooldown() {
+      let remaining = RESEND_SECONDS;
+      resendBtn.disabled = true;
+      resendBtn.textContent = `Resend OTP (${remaining}s)`;
+      resendCountdownEl.textContent = "You can request a new OTP if SMS is delayed.";
+      if (resendTimer) clearInterval(resendTimer);
+      resendTimer = setInterval(() => {
+        remaining--;
+        resendBtn.textContent = `Resend OTP (${remaining}s)`;
+        if (remaining <= 0) {
+          clearInterval(resendTimer);
+          resendBtn.disabled = false;
+          resendBtn.textContent = "Resend OTP";
+          resendCountdownEl.textContent = "";
+        }
+      }, 1000);
+    }
+
+    async function sendOtp(phone){
+      // Always create a fresh invisible verifier for each send (initial or resend)
+      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
+      await window.recaptchaVerifier.verify();
+      return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
+    }
+
     // Submit handler
-    submitBtn.addEventListener("click", () => {
+    submitBtn.addEventListener("click", async () => {
       const mobileValue = document.getElementById("mobile").value;
       if (!/^([6-9])\d{9}$/.test(mobileValue)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
       if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
@@ -563,20 +600,13 @@
       if (!confirmationResult) {
         submitBtn.disabled = true; submitBtn.textContent = "Sending OTP...";
         try {
-          window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
-          window.recaptchaVerifier.verify().then(() => {
-            return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
-          }).then(result => {
-            confirmationResult = result;
-            document.getElementById('otpSection').style.display = 'block'; // show now
-            otpInputEl.focus();
-            submitBtn.disabled = false; submitBtn.textContent = "Submit OTP for Donation";
-          }).catch(err => {
-            alert("Error sending OTP: " + err.message);
-            submitBtn.disabled = false; submitBtn.textContent = "Submit";
-          });
-        } catch (e) {
-          alert("Unexpected error. Please reload and try again.");
+          confirmationResult = await sendOtp(phone);
+          document.getElementById('otpSection').style.display = 'block'; // show now
+          otpInputEl.focus();
+          startResendCooldown();
+          submitBtn.disabled = false; submitBtn.textContent = "Submit OTP for Donation";
+        } catch (err) {
+          alert("Error sending OTP: " + err.message);
           submitBtn.disabled = false; submitBtn.textContent = "Submit";
         }
         return;
@@ -630,6 +660,28 @@
         otpFeedback.textContent = "Wrong OTP";
         otpFeedback.style.color = "red";
       });
+    });
+
+    // Resend OTP click
+    resendBtn.addEventListener('click', async () => {
+      if (resendBtn.disabled) return;
+      const mobileValue = document.getElementById("mobile").value;
+      if (!/^([6-9])\d{9}$/.test(mobileValue)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
+
+      const phone = "+91" + mobileValue;
+      resendBtn.disabled = true;
+      resendBtn.textContent = "Sending...";
+      try {
+        confirmationResult = await sendOtp(phone); // replace with fresh confirmationResult
+        otpFeedback.textContent = "OTP resent. Please check your SMS.";
+        otpFeedback.style.color = "green";
+        startResendCooldown();
+      } catch (err) {
+        otpFeedback.textContent = "Failed to resend OTP: " + err.message;
+        otpFeedback.style.color = "red";
+        resendBtn.disabled = false;
+        resendBtn.textContent = "Resend OTP";
+      }
     });
   </script>
 
