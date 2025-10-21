@@ -84,6 +84,12 @@
     /* Quotes placement: mobile top vs desktop right */
     #topQuotes{ color:#7846e4; font-size:.95rem; }
 
+    /* Small clock badge */
+    .clock-badge{
+      display:inline-flex; align-items:center; gap:.25rem;
+      font-size:.85rem; padding:.125rem .5rem; border-radius:999px; background:#fff; border:1px solid #cbd5e1; color:#334155;
+    }
+
     /* Responsive */
     @media (max-width: 991.98px){
       .divider-lg{ border-left:none; border-top:1px solid #eee; margin-top:14px; padding-top:14px; }
@@ -166,11 +172,15 @@
             <div id="otpSection">
               <label for="otp" class="form-label">Enter OTP</label>
               <input type="text" id="otp" class="form-control mt-1" inputmode="numeric" maxlength="6"/>
+              <!-- Tiny info line -->
+              <div id="otpSentInfo" class="text-muted small mt-1"></div>
               <div class="d-flex align-items-center gap-2 mt-2">
                 <button type="button" id="resendOtpBtn" class="btn btn-sm btn-outline-secondary" disabled>
-                  Resend OTP (60s)
+                  Resend OTP
                 </button>
-                <span id="resendCountdown" class="text-muted small"></span>
+                <!-- watch (mm:ss) -->
+                <span id="resendCountdown" class="clock-badge" aria-live="polite" style="display:none;">⏱️ 01:00</span>
+                <span id="resendHelp" class="text-muted small">You can request a new OTP if SMS is delayed.</span>
               </div>
               <div id="otpFeedback" class="fw-bold mt-2"></div>
             </div>
@@ -286,7 +296,7 @@
           <div class="mt-3">
             <div class="ribbon" style="border-left-color:#ddd; color:#222;">
               <div><strong>YOUR CONTRIBUTIONS ARE ELIGIBLE FOR 50% TAX BENEFIT UNDER SECTION 80G.</strong></div>
-              <div>PAN: <strong>AATCM5136F</strong> &nbsp; | &nbsp; 80G URN: <strong>AATCM5136FF20251</strong></div>
+              <div><strong>PAN:</strong> AATCM5136F &nbsp; | &nbsp; <strong>80G URN:</strong> AATCM5136FF20251</div>
             </div>
 
             <!-- Right-column quotes (desktop only) -->
@@ -425,6 +435,8 @@
     const donationOptions = document.getElementById("donationOptions");
     const resendBtn = document.getElementById("resendOtpBtn");
     const resendCountdownEl = document.getElementById("resendCountdown");
+    const resendHelp = document.getElementById("resendHelp");
+    const otpSentInfo = document.getElementById("otpSentInfo");
     let resendTimer = null;
     const RESEND_SECONDS = 60;
 
@@ -551,34 +563,46 @@
     }
 
     // Auto-submit on full OTP typed (only after OTP exists)
-    otpInputEl && otpInputEl.addEventListener("input", () => {
-      if (otpInputEl.value.length === 6 && confirmationResult) submitBtn.click();
+    const otpInputElRef = document.getElementById("otp");
+    otpInputElRef && otpInputElRef.addEventListener("input", () => {
+      if (otpInputElRef.value.length === 6 && confirmationResult) submitBtn.click();
     });
 
-    // Resend OTP cooldown logic
+    // Format mm:ss
+    function mmss(n){ const m=String(Math.floor(n/60)).padStart(2,'0'); const s=String(n%60).padStart(2,'0'); return `${m}:${s}`; }
+
+    // Resend OTP cooldown logic with visible watch
     function startResendCooldown() {
       let remaining = RESEND_SECONDS;
       resendBtn.disabled = true;
-      resendBtn.textContent = `Resend OTP (${remaining}s)`;
-      resendCountdownEl.textContent = "You can request a new OTP if SMS is delayed.";
+      resendCountdownEl.style.display = 'inline-flex';
+      resendCountdownEl.textContent = `⏱️ ${mmss(remaining)}`;
       if (resendTimer) clearInterval(resendTimer);
       resendTimer = setInterval(() => {
         remaining--;
-        resendBtn.textContent = `Resend OTP (${remaining}s)`;
+        resendCountdownEl.textContent = `⏱️ ${mmss(remaining)}`;
         if (remaining <= 0) {
           clearInterval(resendTimer);
           resendBtn.disabled = false;
-          resendBtn.textContent = "Resend OTP";
-          resendCountdownEl.textContent = "";
+          resendCountdownEl.style.display = 'none';
         }
       }, 1000);
+    }
+
+    function maskPhoneForLine(raw10){ // "+91-XXXXXX1234"
+      if(!raw10 || raw10.length!==10) return "";
+      return "+91-XXXXXX" + raw10.slice(-4);
     }
 
     async function sendOtp(phone){
       // Always create a fresh invisible verifier for each send (initial or resend)
       window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
       await window.recaptchaVerifier.verify();
-      return firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
+      const res = await firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
+      // show tiny info line
+      const ten = phone.replace("+91","");
+      otpSentInfo.textContent = "OTP sent to " + maskPhoneForLine(ten);
+      return res;
     }
 
     // Submit handler
@@ -613,7 +637,7 @@
       }
 
       // Confirm OTP then reveal options + send to Make
-      confirmationResult.confirm(otpInputEl.value).then(() => {
+      confirmationResult.confirm(otpInputElRef.value).then(() => {
         authConfirmed.style.display = "block";
 
         // Hide 80G row + undertaking post-auth
@@ -675,6 +699,7 @@
         confirmationResult = await sendOtp(phone); // replace with fresh confirmationResult
         otpFeedback.textContent = "OTP resent. Please check your SMS.";
         otpFeedback.style.color = "green";
+        resendBtn.textContent = "Resend OTP";
         startResendCooldown();
       } catch (err) {
         otpFeedback.textContent = "Failed to resend OTP: " + err.message;
