@@ -62,8 +62,9 @@
     .btn-primary{ background-color: var(--maf-accent); border:none; }
     .btn-primary:hover{ background-color:#e68a00; }
 
-    /* OTP hidden until started */
+    /* OTP section */
     #otpSection{ display:none; margin-bottom:12px; background:#eef5ff; padding:12px; border-radius:8px; }
+    #otpSentInfo{ font-size:.9rem; }
 
     .cf-turnstile{ margin-top:8px; }
 
@@ -84,10 +85,27 @@
     /* Quotes placement: mobile top vs desktop right */
     #topQuotes{ color:#7846e4; font-size:.95rem; }
 
-    /* Tiny countdown badge */
+    /* Countdown badge */
     .clock-badge{
       display:inline-flex; align-items:center; gap:.25rem;
       font-size:.85rem; padding:.125rem .5rem; border-radius:999px; background:#fff; border:1px solid #cbd5e1; color:#334155;
+    }
+
+    /* Checkbox highlight (all four checkboxes) */
+    .check-hi{
+      background:#fff8e1; /* soft yellow */
+      border:1px solid #f6d28b;
+      border-radius:10px;
+      padding:.6rem .75rem;
+      margin-bottom:.6rem;
+    }
+    .check-hi .form-check-input{
+      border-color:#c58f00;
+      width:1.1rem; height:1.1rem;
+    }
+    .check-hi .form-check-label{
+      font-weight:600;
+      color:#5b3a00;
     }
 
     /* Responsive */
@@ -135,7 +153,7 @@
 
         <!-- Undertaking directly beneath (shows when Yes) -->
         <div class="mt-2" id="undertakingWrap" style="display:none;">
-          <div class="form-check">
+          <div class="form-check check-hi">
             <input class="form-check-input" type="checkbox" id="undertaking80g">
             <label class="form-check-label req" for="undertaking80g">
               I confirm my PAN and address are correct and consent to verification for 80G reporting.
@@ -261,8 +279,8 @@
               Authenticate your mobile number by pressing <strong>Submit</strong> to reveal QR, UPI and bank details.
             </div>
 
-            <!-- Consents -->
-            <div class="form-check mb-2">
+            <!-- Consents (all highlighted) -->
+            <div class="form-check check-hi">
               <input class="form-check-input" type="checkbox" id="declaration" required>
               <label class="form-check-label req" for="declaration">
                 I hereby declare I am an Indian citizen
@@ -271,7 +289,7 @@
               </label>
             </div>
 
-            <div class="form-check mb-2">
+            <div class="form-check check-hi">
               <input class="form-check-input" type="checkbox" id="anonymous">
               <label class="form-check-label" for="anonymous">
                 I opt to remain anonymous and not have my name published on the website,
@@ -279,7 +297,7 @@
               </label>
             </div>
 
-            <div class="form-check mb-2">
+            <div class="form-check check-hi">
               <input class="form-check-input" type="checkbox" id="receipt">
               <label class="form-check-label" for="receipt">I would like to receive the receipt via WhatsApp/email.</label>
             </div>
@@ -383,6 +401,7 @@
 
   </div><!-- /page-wrap -->
 
+  <!-- reCAPTCHA host (single!) -->
   <div id="recaptcha-container" style="display:none;"></div>
 
   <script>
@@ -435,13 +454,13 @@
     const authConfirmed = document.getElementById("authConfirmed");
     const donationOptions = document.getElementById("donationOptions");
 
-    // RESEND controls (NEW)
+    // RESEND controls
     const resendBtn = document.getElementById("resendOtpBtn");
     const resendCountdownEl = document.getElementById("resendCountdown");
     const resendHelp = document.getElementById("resendHelp");
     const otpSentInfo = document.getElementById("otpSentInfo");
     let resendTimer = null;
-    const RESEND_SECONDS = 60; // keep 60s gap
+    const RESEND_SECONDS = 60; // 60s gap
 
     // 80G controls
     const need80gYes = document.getElementById('need80gYes');
@@ -517,14 +536,14 @@
     nameInput.addEventListener('input', validatePAN);
 
     function setReq(el, on){ if(!el) return; on ? el.setAttribute('required','required') : el.removeAttribute('required'); }
-    function markLabel(labelEl, on){ if(!labelEl) return; labelEl.classList.toggle('req', !!on); }
+    function markLabel(labelEl, on){ if(!el) return; }
     function toggleAddrRequired(on){
       setReq(country,on); setReq(state,on); setReq(city,on); setReq(address,on); setReq(pin,on);
-      markLabel(document.getElementById('countryLabel'), on);
-      markLabel(document.getElementById('stateLabel'), on);
-      markLabel(document.getElementById('cityLabel'), on);
-      markLabel(document.getElementById('addressLabel'), on);
-      markLabel(document.getElementById('pinLabel'), on);
+      document.getElementById('countryLabel').classList.toggle('req', !!on);
+      document.getElementById('stateLabel').classList.toggle('req', !!on);
+      document.getElementById('cityLabel').classList.toggle('req', !!on);
+      document.getElementById('addressLabel').classList.toggle('req', !!on);
+      document.getElementById('pinLabel').classList.toggle('req', !!on);
     }
 
     function toggle80G(){
@@ -532,17 +551,16 @@
 
       undertakingWrap.style.display = need ? 'block' : 'none';
       setReq(undertaking80g, need);
-      markLabel(document.querySelector('label[for="undertaking80g"]'), need);
 
       panWrap.style.display = need ? 'block' : 'none';
       setReq(panInput, need);
-      markLabel(document.getElementById('panLabel'), need);
 
       document.getElementById('addrBlock').style.display = 'block'; // always visible
       toggleAddrRequired(need);
 
+      const nameLabel = document.getElementById('nameLabel');
       nameLabel.textContent = need ? 'Name as per PAN' : 'Full Name';
-      markLabel(nameLabel, true); // Name always required
+      nameLabel.classList.add('req'); // Name always required
 
       if(!need){
         undertaking80g.checked = false;
@@ -570,7 +588,7 @@
       if (otpInputEl.value.length === 6 && confirmationResult) submitBtn.click();
     });
 
-    // Helpers for resend
+    // Countdown helpers
     function mmss(n){ const m=String(Math.floor(n/60)).padStart(2,'0'); const s=String(n%60).padStart(2,'0'); return `${m}:${s}`; }
     function startResendCooldown() {
       let remaining = RESEND_SECONDS;
@@ -590,19 +608,38 @@
     }
     function maskPhoneForLine(raw10){ return (raw10 && raw10.length===10) ? "+91-XXXXXX"+raw10.slice(-4) : ""; }
 
+    // Single reCAPTCHA instance across sends/resends
+    let recaptchaVerifier = null;
+    let recaptchaWidgetId = null;
+
+    async function ensureRecaptcha() {
+      if (!recaptchaVerifier) {
+        recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
+        recaptchaWidgetId = await recaptchaVerifier.render();
+      }
+    }
+
     async function sendOtp(phone){
-      // fresh invisible verifier per send
-      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
-      await window.recaptchaVerifier.verify();
-      const res = await firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier);
-      // tiny info line
+      await ensureRecaptcha();
+
+      // Reset the widget so a fresh token is generated
+      if (window.grecaptcha && recaptchaWidgetId !== null) {
+        grecaptcha.reset(recaptchaWidgetId);
+      }
+
+      // Verify and send OTP
+      await recaptchaVerifier.verify();
+      const result = await firebase.auth().signInWithPhoneNumber(phone, recaptchaVerifier);
+
+      // Info line under OTP
       const ten = phone.replace("+91","");
       otpSentInfo.textContent = "OTP sent to " + maskPhoneForLine(ten);
-      return res;
+
+      return result;
     }
 
     // Submit handler
-    submitBtn.addEventListener("click", () => {
+    submitBtn.addEventListener("click", async () => {
       const mobileValue = document.getElementById("mobile").value;
       if (!/^([6-9])\d{9}$/.test(mobileValue)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
       if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
@@ -620,18 +657,13 @@
       if (!confirmationResult) {
         submitBtn.disabled = true; submitBtn.textContent = "Sending OTP...";
         try {
-          sendOtp(phone).then(result => {
-            confirmationResult = result;
-            document.getElementById('otpSection').style.display = 'block';
-            otpInputEl.focus();
-            startResendCooldown();
-            submitBtn.disabled = false; submitBtn.textContent = "Submit OTP for Donation";
-          }).catch(err => {
-            alert("Error sending OTP: " + err.message);
-            submitBtn.disabled = false; submitBtn.textContent = "Submit";
-          });
-        } catch (e) {
-          alert("Unexpected error. Please reload and try again.");
+          confirmationResult = await sendOtp(phone);
+          document.getElementById('otpSection').style.display = 'block';
+          otpInputEl.focus();
+          startResendCooldown();
+          submitBtn.disabled = false; submitBtn.textContent = "Submit OTP for Donation";
+        } catch (err) {
+          alert("Error sending OTP: " + err.message);
           submitBtn.disabled = false; submitBtn.textContent = "Submit";
         }
         return;
@@ -655,30 +687,33 @@
         const panVal = wants80g ? (panInput.value||'').toUpperCase() : '';
         const panType = panVal ? panVal.charAt(3) : '';
 
-        // Send to Make (UNCHANGED URL & payload)
+        // Prepare payload once (for safety)
+        const payload = {
+          timestamp: new Date().toISOString(),
+          name: document.getElementById("name").value,
+          phone: document.getElementById("mobile").value,
+          email: document.getElementById("email").value || "",
+          pan: panVal,
+          PAN_Type: panType,
+          country: country.value || "",
+          state:   state.value   || "",
+          city:    city.value    || "",
+          address: address.value || "",
+          pin:     pin.value     || "",
+          message: document.getElementById("message").value || "",
+          anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
+          receipt: document.getElementById("receipt").checked ? "Yes" : "No",
+          status: "Verified",
+          verified: "Yes",
+          want_80G: wants80g ? "Yes" : "No"
+        };
+
+        // Send to Make (UNCHANGED URL & KEYS)
         fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            timestamp: new Date().toISOString(),
-            name: document.getElementById("name").value,
-            phone: document.getElementById("mobile").value,
-            email: document.getElementById("email").value || "",
-            pan: panVal,
-            PAN_Type: panType,
-            country: country.value || "",
-            state:   state.value   || "",
-            city:    city.value    || "",
-            address: address.value || "",
-            pin:     pin.value     || "",
-            message: document.getElementById("message").value || "",
-            anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
-            receipt: document.getElementById("receipt").checked ? "Yes" : "No",
-            status: "Verified",
-            verified: "Yes",
-            want_80G: wants80g ? "Yes" : "No"
-          })
-        }).then(() => console.log("✅ Sent to Make.com"))
+          body: JSON.stringify(payload)
+        }).then(() => console.log("✅ Sent to Make.com", payload))
           .catch(err => console.error("❌ Make error:", err));
 
       }).catch(err => {
@@ -711,7 +746,5 @@
       }
     });
   </script>
-
-  <div id="recaptcha-container" style="display:none;"></div>
 </body>
 </html>
