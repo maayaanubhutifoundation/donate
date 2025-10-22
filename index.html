@@ -290,12 +290,15 @@
             </div>
 
             <div class="form-check check-hi">
-              <input class="form-check-input" type="checkbox" id="anonymous">
-              <label class="form-check-label" for="anonymous">
-                I opt to remain anonymous and not have my name published on the website,
-                but I am aware that if I opt for 80G, my details will be reported to the Income Tax Department (Form 10BD/10BE).
-              </label>
-            </div>
+  <input class="form-check-input" type="checkbox" id="anonymous">
+  <label class="form-check-label" for="anonymous" id="anonymousLabel">
+    I opt to remain anonymous and <button type="button" id="anonReadToggle" class="btn btn-link p-0" style="font-size:.85rem;">Read More</button>
+    <span id="anonMore" style="display:none;">
+      not have my name published on the website, but I am aware that if I opt for 80G, my details will be reported
+      to the Income Tax Department (Form 10BD/10BE).
+    </span>
+  </label>
+</div>
 
             <div class="form-check check-hi">
               <input class="form-check-input" type="checkbox" id="receipt">
@@ -413,6 +416,15 @@
       more.style.display = show ? "inline" : "none";
       btn.textContent = show ? "Read Less" : "Read More";
     });
+
+// Anonymous checkbox "Read More/Less"
+document.getElementById("anonReadToggle").addEventListener("click", () => {
+  const more = document.getElementById("anonMore");
+  const btn  = document.getElementById("anonReadToggle");
+  const show = more.style.display === "none";
+  more.style.display = show ? "inline" : "none";
+  btn.textContent = show ? "Read Less" : "Read More";
+});
 
     function copyText(id){
       const text=document.getElementById(id).innerText;
@@ -567,6 +579,20 @@
         panInput.value=''; panInput.setCustomValidity(''); panHint.textContent='';
       }
     }
+// Adjust anonymous statement based on 80G selection
+const anonLabel = document.getElementById("anonymousLabel");
+const anonMore  = document.getElementById("anonMore");
+const anonToggleBtn = document.getElementById("anonReadToggle");
+
+if (need) {
+  // 80G = Yes → full statement visible via Read More
+  anonToggleBtn.style.display = "inline";
+} else {
+  // 80G = No → only short version
+  anonToggleBtn.style.display = "none";
+  anonMore.style.display = "none";
+  anonLabel.innerHTML = "I opt to remain anonymous and not have my name published on the website.";
+}
     document.getElementById('need80gYes').addEventListener('change', toggle80G);
     document.getElementById('need80gNo').addEventListener('change', toggle80G);
     toggle80G(); // initialize (default Yes)
