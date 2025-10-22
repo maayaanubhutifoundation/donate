@@ -290,15 +290,16 @@
             </div>
 
             <div class="form-check check-hi">
-  <input class="form-check-input" type="checkbox" id="anonymous">
-  <label class="form-check-label" for="anonymous" id="anonymousLabel">
-    I opt to remain anonymous and <button type="button" id="anonReadToggle" class="btn btn-link p-0" style="font-size:.85rem;">Read More</button>
-    <span id="anonMore" style="display:none;">
-      not have my name published on the website, but I am aware that if I opt for 80G, my details will be reported
-      to the Income Tax Department (Form 10BD/10BE).
-    </span>
-  </label>
-</div>
+              <input class="form-check-input" type="checkbox" id="anonymous">
+              <label class="form-check-label" for="anonymous" id="anonymousLabel">
+                I opt to remain anonymous and
+                <button type="button" id="anonReadToggle" class="btn btn-link p-0" style="font-size:.85rem;">Read More</button>
+                <span id="anonMore" style="display:none;">
+                  not have my name published on the website, but I am aware that if I opt for 80G, my details will be reported
+                  to the Income Tax Department (Form 10BD/10BE).
+                </span>
+              </label>
+            </div>
 
             <div class="form-check check-hi">
               <input class="form-check-input" type="checkbox" id="receipt">
@@ -408,7 +409,7 @@
   <div id="recaptcha-container" style="display:none;"></div>
 
   <script>
-    // Read more toggle
+    // Read more toggle for general declaration
     document.getElementById("readToggle").addEventListener("click", () => {
       const more = document.getElementById("more");
       const btn  = document.getElementById("readToggle");
@@ -417,14 +418,14 @@
       btn.textContent = show ? "Read Less" : "Read More";
     });
 
-// Anonymous checkbox "Read More/Less"
-document.getElementById("anonReadToggle").addEventListener("click", () => {
-  const more = document.getElementById("anonMore");
-  const btn  = document.getElementById("anonReadToggle");
-  const show = more.style.display === "none";
-  more.style.display = show ? "inline" : "none";
-  btn.textContent = show ? "Read Less" : "Read More";
-});
+    // Anonymous Read More/Less
+    document.getElementById("anonReadToggle").addEventListener("click", () => {
+      const more = document.getElementById("anonMore");
+      const btn  = document.getElementById("anonReadToggle");
+      const show = more.style.display === "none";
+      more.style.display = show ? "inline" : "none";
+      btn.textContent = show ? "Read Less" : "Read More";
+    });
 
     function copyText(id){
       const text=document.getElementById(id).innerText;
@@ -469,7 +470,6 @@ document.getElementById("anonReadToggle").addEventListener("click", () => {
     // RESEND controls
     const resendBtn = document.getElementById("resendOtpBtn");
     const resendCountdownEl = document.getElementById("resendCountdown");
-    const resendHelp = document.getElementById("resendHelp");
     const otpSentInfo = document.getElementById("otpSentInfo");
     let resendTimer = null;
     const RESEND_SECONDS = 60; // 60s gap
@@ -548,7 +548,6 @@ document.getElementById("anonReadToggle").addEventListener("click", () => {
     nameInput.addEventListener('input', validatePAN);
 
     function setReq(el, on){ if(!el) return; on ? el.setAttribute('required','required') : el.removeAttribute('required'); }
-    function markLabel(labelEl, on){ if(!el) return; }
     function toggleAddrRequired(on){
       setReq(country,on); setReq(state,on); setReq(city,on); setReq(address,on); setReq(pin,on);
       document.getElementById('countryLabel').classList.toggle('req', !!on);
@@ -557,82 +556,6 @@ document.getElementById("anonReadToggle").addEventListener("click", () => {
       document.getElementById('addressLabel').classList.toggle('req', !!on);
       document.getElementById('pinLabel').classList.toggle('req', !!on);
     }
-
-    function toggle80G(){
-      const need = need80gValue()==='yes';
-
-      undertakingWrap.style.display = need ? 'block' : 'none';
-      setReq(undertaking80g, need);
-
-      panWrap.style.display = need ? 'block' : 'none';
-      setReq(panInput, need);
-
-      document.getElementById('addrBlock').style.display = 'block'; // always visible
-      toggleAddrRequired(need);
-
-      const nameLabel = document.getElementById('nameLabel');
-      nameLabel.textContent = need ? 'Name as per PAN' : 'Full Name';
-      nameLabel.classList.add('req'); // Name always required
-
-      if(!need){
-        undertaking80g.checked = false;
-        panInput.value=''; panInput.setCustomValidity(''); panHint.textContent='';
-      }
-    }
-// Adjust anonymous statement based on 80G selection
-const anonLabel = document.getElementById("anonymousLabel");
-const anonMore  = document.getElementById("anonMore");
-const anonToggleBtn = document.getElementById("anonReadToggle");
-
-if (need) {
-  // 80G = Yes → full statement visible via Read More
-  anonToggleBtn.style.display = "inline";
-} else {
-  // 80G = No → only short version
-  anonToggleBtn.style.display = "none";
-  anonMore.style.display = "none";
-  anonLabel.innerHTML = "I opt to remain anonymous and not have my name published on the website.";
-}
-    document.getElementById('need80gYes').addEventListener('change', toggle80G);
-    document.getElementById('need80gNo').addEventListener('change', toggle80G);
-    toggle80G(); // initialize (default Yes)
-
-    // Validate address when needed
-    function validateAddressIfNeeded(){
-      const need = need80gValue()==='yes';
-      if(!need) return true;
-      if(!country.value) { country.focus(); return false; }
-      if(!state.value)   { state.focus();   return false; }
-      if(!city.value.trim()) { city.focus(); return false; }
-      if(!address.value.trim()) { address.focus(); return false; }
-      if(!/^\d{6}$/.test(pin.value||'')) { pin.focus(); alert('Please enter a valid 6-digit PIN.'); return false; }
-      return true;
-    }
-
-    // Auto-submit on full OTP typed (only after OTP exists)
-    otpInputEl && otpInputEl.addEventListener("input", () => {
-      if (otpInputEl.value.length === 6 && confirmationResult) submitBtn.click();
-    });
-
-    // Countdown helpers
-    function mmss(n){ const m=String(Math.floor(n/60)).padStart(2,'0'); const s=String(n%60).padStart(2,'0'); return `${m}:${s}`; }
-    function startResendCooldown() {
-      let remaining = RESEND_SECONDS;
-      resendBtn.disabled = true;
-      resendCountdownEl.style.display = 'inline-flex';
-      resendCountdownEl.textContent = `⏱️ ${mmss(remaining)}`;
-      if (resendTimer) clearInterval(resendTimer);
-      resendTimer = setInterval(() => {
-        remaining--;
-        resendCountdownEl.textContent = `⏱️ ${mmss(remaining)}`;
-        if (remaining <= 0) {
-          clearInterval(resendTimer);
-          resendBtn.disabled = false;
-          resendCountdownEl.style.display = 'none';
-        }
-      }, 1000);
-    }
-    function maskPhoneForLine(raw10){ return (raw10 && raw10.length===10) ? "+91-XXXXXX"+raw10.slice(-4) : ""; }
 
     // Single reCAPTCHA instance across sends/resends
     let recaptchaVerifier = null;
@@ -659,9 +582,103 @@ if (need) {
 
       // Info line under OTP
       const ten = phone.replace("+91","");
-      otpSentInfo.textContent = "OTP sent to " + maskPhoneForLine(ten);
+      otpSentInfo.textContent = "OTP sent to +91-XXXXXX" + ten.slice(-4);
 
       return result;
+    }
+
+    // Read More/Less behavior for anonymous label depends on 80G choice
+    function setAnonymousTextFor80G(need){
+      const anonLabel = document.getElementById("anonymousLabel");
+      const anonMore  = document.getElementById("anonMore");
+      const anonBtn   = document.getElementById("anonReadToggle");
+
+      if (need) {
+        // 80G = Yes -> retain Read More/Less flow
+        anonLabel.innerHTML = `
+          I opt to remain anonymous and
+          <button type="button" id="anonReadToggle" class="btn btn-link p-0" style="font-size:.85rem;">Read More</button>
+          <span id="anonMore" style="display:none;">
+            not have my name published on the website, but I am aware that if I opt for 80G, my details will be reported
+            to the Income Tax Department (Form 10BD/10BE).
+          </span>`;
+        // re-bind click
+        document.getElementById("anonReadToggle").addEventListener("click", () => {
+          const more = document.getElementById("anonMore");
+          const btn  = document.getElementById("anonReadToggle");
+          const show = more.style.display === "none";
+          more.style.display = show ? "inline" : "none";
+          btn.textContent = show ? "Read Less" : "Read More";
+        });
+      } else {
+        // 80G = No -> short statement only
+        anonLabel.innerHTML = "I opt to remain anonymous and not have my name published on the website.";
+      }
+    }
+
+    function toggle80G(){
+      const need = need80gValue()==='yes';
+
+      undertakingWrap.style.display = need ? 'block' : 'none';
+      setReq(undertaking80g, need);
+
+      panWrap.style.display = need ? 'block' : 'none';
+      setReq(panInput, need);
+
+      document.getElementById('addrBlock').style.display = 'block'; // always visible
+      toggleAddrRequired(need);
+
+      const nameLabel = document.getElementById('nameLabel');
+      nameLabel.textContent = need ? 'Name as per PAN' : 'Full Name';
+      nameLabel.classList.add('req'); // Name always required
+
+      if(!need){
+        undertaking80g.checked = false;
+        panInput.value=''; panInput.setCustomValidity(''); panHint.textContent='';
+      }
+
+      // Adjust anonymous label content for 80G
+      setAnonymousTextFor80G(need);
+    }
+    document.getElementById('need80gYes').addEventListener('change', toggle80G);
+    document.getElementById('need80gNo').addEventListener('change', toggle80G);
+    toggle80G(); // initialize (default Yes)
+
+    // Validate address when needed
+    function validateAddressIfNeeded(){
+      const need = need80gValue()==='yes';
+      if(!need) return true;
+      if(!country.value) { country.focus(); return false; }
+      if(!state.value)   { state.focus();   return false; }
+      if(!city.value.trim()) { city.focus(); return false; }
+      if(!address.value.trim()) { address.focus(); return false; }
+      if(!/^\d{6}$/.test(pin.value||'')) { pin.focus(); alert('Please enter a valid 6-digit PIN.'); return false; }
+      return true;
+    }
+
+    // Auto-submit on full OTP typed (only after OTP exists)
+    const otpInputElRef = document.getElementById("otp");
+    otpInputElRef && otpInputElRef.addEventListener("input", () => {
+      if (otpInputElRef.value.length === 6 && confirmationResult) submitBtn.click();
+    });
+
+    // Countdown helpers
+    function mmss(n){ const m=String(Math.floor(n/60)).padStart(2,'0'); const s=String(n%60).padStart(2,'0'); return `${m}:${s}`; }
+    function startResendCooldown() {
+      let remaining = RESEND_SECONDS;
+      resendBtn.disabled = true;
+      resendCountdownEl.style.display = 'inline-flex';
+      resendCountdownEl.textContent = `⏱️ ${mmss(remaining)}`;
+      if (resendTimer) clearInterval(resendTimer);
+      resendTimer = setInterval(() => {
+        remaining--;
+        resendCountdownEl.textContent = `⏱️ ${mmss(remaining)}`;
+        if (remaining <= 0) {
+          clearInterval(resendTimer);
+          resendBtn.disabled = false;
+          resendCountdownEl.style.display = 'none';
+        }
+      }, 1000);
     }
 
     // Submit handler
@@ -685,7 +702,7 @@ if (need) {
         try {
           confirmationResult = await sendOtp(phone);
           document.getElementById('otpSection').style.display = 'block';
-          otpInputEl.focus();
+          document.getElementById('otp').focus();
           startResendCooldown();
           submitBtn.disabled = false; submitBtn.textContent = "Submit OTP for Donation";
         } catch (err) {
@@ -696,7 +713,7 @@ if (need) {
       }
 
       // Confirm OTP then reveal options + send to Make
-      confirmationResult.confirm(otpInputEl.value).then(() => {
+      confirmationResult.confirm(document.getElementById('otp').value).then(() => {
         authConfirmed.style.display = "block";
 
         // Hide 80G row + undertaking post-auth
@@ -713,7 +730,7 @@ if (need) {
         const panVal = wants80g ? (panInput.value||'').toUpperCase() : '';
         const panType = panVal ? panVal.charAt(3) : '';
 
-        // Prepare payload once (for safety)
+        // Prepare payload (keys unchanged)
         const payload = {
           timestamp: new Date().toISOString(),
           name: document.getElementById("name").value,
@@ -749,26 +766,27 @@ if (need) {
     });
 
     // Resend OTP click
-    resendBtn.addEventListener('click', async () => {
-      if (resendBtn.disabled) return;
+    document.getElementById('resendOtpBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('resendOtpBtn');
+      if (btn.disabled) return;
       const mobileValue = document.getElementById("mobile").value;
       if (!/^([6-9])\d{9}$/.test(mobileValue)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
 
       const phone = "+91" + mobileValue;
-      resendBtn.disabled = true;
-      const prevLabel = resendBtn.textContent;
-      resendBtn.textContent = "Sending...";
+      btn.disabled = true;
+      const prevLabel = btn.textContent;
+      btn.textContent = "Sending...";
       try {
         confirmationResult = await sendOtp(phone); // fresh confirmationResult
         otpFeedback.textContent = "OTP resent. Please check your SMS.";
         otpFeedback.style.color = "green";
-        resendBtn.textContent = prevLabel;
+        btn.textContent = prevLabel;
         startResendCooldown();
       } catch (err) {
         otpFeedback.textContent = "Failed to resend OTP: " + err.message;
         otpFeedback.style.color = "red";
-        resendBtn.disabled = false;
-        resendBtn.textContent = prevLabel;
+        btn.disabled = false;
+        btn.textContent = prevLabel;
       }
     });
   </script>
