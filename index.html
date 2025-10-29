@@ -695,118 +695,107 @@
     }
     // >>>>>>>> END FIX <<<<<<<<<<
 
-    // Submit handler
-    submitBtn.addEventListener("click", async () => {
-      const mobileValue = document.getElementById("mobile").value;
+// Submit handler
+submitBtn.addEventListener("click", async () => {
+  const mobileValue = document.getElementById("mobile").value;
 
-      // block if name empty (applies to both 80G Yes and No)
-      if (!validateNameRequired()) return;
+  // block if name empty (applies to both 80G Yes and No)
+  if (!validateNameRequired()) return;
 
-      if (!/^([6-9])\d{9}$/.test(mobileValue)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
-      if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
+  if (!/^([6-9])\d{9}$/.test(mobileValue)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
+  if (!document.getElementById("declaration").checked) return alert("Please accept the declaration.");
 
-      if(need80gValue()==='yes'){
-        if(!undertaking80g.checked) return alert("Please confirm the 80G undertaking.");
-        validatePAN();
-        if(panInput.validationMessage){ alert(panInput.validationMessage); return; }
-        if(!validateAddressIfNeeded()) return;
-      }
+  if(need80gValue()==='yes'){
+    if(!undertaking80g.checked) return alert("Please confirm the 80G undertaking.");
+    validatePAN();
+    if(panInput.validationMessage){ alert(panInput.validationMessage); return; }
+    if(!validateAddressIfNeeded()) return;
+  }
 
-      const phone = "+91" + mobileValue;
+  const phone = "+91" + mobileValue;
 
-      // Start OTP if not started
-      if (!confirmationResult) {
-        submitBtn.disabled = true; submitBtn.textContent = "Sending OTP...";
-        try {
-          confirmationResult = await sendOtp(phone);
-          document.getElementById('otpSection').style.display = 'block';
-          document.getElementById('otp').focus();
-          startResendCooldown();
-          submitBtn.disabled = false; submitBtn.textContent = "Submit OTP for Donation";
-        } catch (err) {
-          alert("Error sending OTP: " + err.message);
-          submitBtn.disabled = false; submitBtn.textContent = "Submit";
-        }
-        return;
-      }
+  // Start OTP if not started
+  if (!confirmationResult) {
+    submitBtn.disabled = true; submitBtn.textContent = "Sending OTP...";
+    try {
+      confirmationResult = await sendOtp(phone);
 
-      // Confirm OTP then reveal options + send to Make
-      confirmationResult.confirm(document.getElementById('otp').value).then(() => {
-        authConfirmed.style.display = "block";
+      // Show OTP UI
+      document.getElementById('otpSection').style.display = 'block';
 
-        // Hide 80G row + undertaking post-auth
-        document.getElementById('undertakingWrap').style.display = 'none';
-        document.getElementById('need80gRow').style.display = 'none';
+      // ⬇️ NEW: bring OTP into view on mobile and focus OTP field
+      const otpBox = document.getElementById('otpSection');
+      const otpField = document.getElementById('otp');
 
-        // Collapse the two-column card so Donation Options move up
-        const uniCard = document.querySelector('.unified-card');
-        if (uniCard) uniCard.style.display = 'none';
+      // scrollIntoView works well on mobile to jump user to OTP box
+      otpBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-        donationOptions.style.display = "block";
+      // slight timeout helps on some mobile browsers so the scroll happens before focus triggers keyboard
+      setTimeout(() => {
+        otpField.focus();
+      }, 200);
 
-        const wants80g = (need80gValue()==='yes');
-        const panVal = wants80g ? (panInput.value||'').toUpperCase() : '';
-        const panType = panVal ? panVal.charAt(3) : '';
+      startResendCooldown();
+      submitBtn.disabled = false; submitBtn.textContent = "Submit OTP for Donation";
+    } catch (err) {
+      alert("Error sending OTP: " + err.message);
+      submitBtn.disabled = false; submitBtn.textContent = "Submit";
+    }
+    return;
+  }
 
-        // Prepare payload (keys unchanged)
-        const payload = {
-          timestamp: new Date().toISOString(),
-          name: document.getElementById("name").value,
-          phone: document.getElementById("mobile").value,
-          email: document.getElementById("email").value || "",
-          pan: panVal,
-          PAN_Type: panType,
-          country: country.value || "",
-          state:   state.value   || "",
-          city:    city.value    || "",
-          address: address.value || "",
-          pin:     pin.value     || "",
-          message: document.getElementById("message").value || "",
-          anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
-          receipt: document.getElementById("receipt").checked ? "Yes" : "No",
-          status: "Verified",
-          verified: "Yes",
-          want_80G: wants80g ? "Yes" : "No"
-        };
+  // Confirm OTP then reveal options + send to Make
+  confirmationResult.confirm(document.getElementById('otp').value).then(() => {
+    authConfirmed.style.display = "block";
 
-        // Send to Make (UNCHANGED URL & KEYS)
-        fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        }).then(() => console.log("✅ Sent to Make.com", payload))
-          .catch(err => console.error("❌ Make error:", err));
+    // Hide 80G row + undertaking post-auth
+    document.getElementById('undertakingWrap').style.display = 'none';
+    document.getElementById('need80gRow').style.display = 'none';
 
-      }).catch(err => {
-        otpFeedback.textContent = "Wrong OTP";
-        otpFeedback.style.color = "red";
-      });
-    });
+    // Collapse the two-column card so Donation Options move up
+    const uniCard = document.querySelector('.unified-card');
+    if (uniCard) uniCard.style.display = 'none';
 
-    // Resend OTP click
-    document.getElementById('resendOtpBtn').addEventListener('click', async () => {
-      const btn = document.getElementById('resendOtpBtn');
-      if (btn.disabled) return;
-      const mobileValue = document.getElementById("mobile").value;
-      if (!/^([6-9])\d{9}$/.test(mobileValue)) return alert("Please enter a valid 10-digit mobile number starting with 6–9.");
+    donationOptions.style.display = "block";
 
-      const phone = "+91" + mobileValue;
-      btn.disabled = true;
-      const prevLabel = btn.textContent;
-      btn.textContent = "Sending...";
-      try {
-        confirmationResult = await sendOtp(phone); // fresh confirmationResult
-        otpFeedback.textContent = "OTP resent. Please check your SMS.";
-        otpFeedback.style.color = "green";
-        btn.textContent = prevLabel;
-        startResendCooldown();
-      } catch (err) {
-        otpFeedback.textContent = "Failed to resend OTP: " + err.message;
-        otpFeedback.style.color = "red";
-        btn.disabled = false;
-        btn.textContent = prevLabel;
-      }
-    });
+    const wants80g = (need80gValue()==='yes');
+    const panVal = wants80g ? (panInput.value||'').toUpperCase() : '';
+    const panType = panVal ? panVal.charAt(3) : '';
+
+    // Prepare payload (keys unchanged)
+    const payload = {
+      timestamp: new Date().toISOString(),
+      name: document.getElementById("name").value,
+      phone: document.getElementById("mobile").value,
+      email: document.getElementById("email").value || "",
+      pan: panVal,
+      PAN_Type: panType,
+      country: country.value || "",
+      state:   state.value   || "",
+      city:    city.value    || "",
+      address: address.value || "",
+      pin:     pin.value     || "",
+      message: document.getElementById("message").value || "",
+      anonymous: document.getElementById("anonymous").checked ? "Yes" : "No",
+      receipt: document.getElementById("receipt").checked ? "Yes" : "No",
+      status: "Verified",
+      verified: "Yes",
+      want_80G: wants80g ? "Yes" : "No"
+    };
+
+    // Send to Make (UNCHANGED URL & KEYS)
+    fetch("https://hook.eu2.make.com/lsq9xd18wvu7xqueguw0jx55qry344q4", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(() => console.log("✅ Sent to Make.com", payload))
+      .catch(err => console.error("❌ Make error:", err));
+
+  }).catch(err => {
+    otpFeedback.textContent = "Wrong OTP";
+    otpFeedback.style.color = "red";
+  });
+});
   </script>
 </body>
 </html>
